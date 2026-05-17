@@ -1,4 +1,5 @@
 import { Icons } from "../components/Icons";
+import logoDos from "../assets/logoDos.png";
 
 // ─────────────────────────────────────────────────────────────────
 //  CÓMO AGREGAR TUS ARCHIVOS
@@ -36,7 +37,7 @@ export const years = [
     emotion: "Curiosidad",
     story: "La participación en encuentros de semilleros abrió el camino para empezar a construir una trayectoria investigativa.",
     highlights: ["Primer póster", "Inicio del semillero", "Divulgación académica"],
-    image: "/videos/imagen.png",
+    image: logoDos,
   },
   {
     year: "2023",

@@ -75,11 +75,6 @@ export default function Hero() {
                     alt="Portal RA"
                     className="mx-auto mb-4 h-50 w-50 object-contain"
                   />
-
-                  <p className="text-lg font-black text-cyan-50">Portal RA del semillero</p>
-                  <p className="mt-2 text-sm text-slate-300">
-                    Simula la entrada a una experiencia inmersiva.
-                  </p>
                 </motion.button>
               </div>
             </div>
