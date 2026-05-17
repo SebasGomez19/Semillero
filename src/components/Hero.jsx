@@ -1,3 +1,4 @@
+import logoDos from "../assets/logoDos.png";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Icons } from "./Icons";
@@ -69,7 +70,12 @@ export default function Hero() {
                   onTap={() => setScanActive((v) => !v)}
                   className="rounded-3xl border border-white/20 bg-white/10 p-7 text-center backdrop-blur-md"
                 >
-                  <Icons.Scan className="mx-auto mb-4 h-16 w-16 text-cyan-300" />
+                  <img
+                    src={logoDos}
+                    alt="Portal RA"
+                    className="mx-auto mb-4 h-50 w-50 object-contain"
+                  />
+
                   <p className="text-lg font-black text-cyan-50">Portal RA del semillero</p>
                   <p className="mt-2 text-sm text-slate-300">
                     Simula la entrada a una experiencia inmersiva.

@@ -18,7 +18,7 @@ export default function App() {
 
       <Header />
       <Hero />
-
+      <Timeline />
       <section className="relative mx-auto max-w-7xl px-6 py-10">
         <SectionTitle eyebrow="Resumen del informe" title="El trabajo en cifras">
           Estas cifras resumen la magnitud del proceso vivido en el semillero.
@@ -30,11 +30,7 @@ export default function App() {
           ))}
         </div>
       </section>
-
-      <Timeline />
-      <ImpactMap />
       <Charts />
-      <WorkCarousel />
 
       <section className="relative mx-auto max-w-7xl px-6 py-16">
         <SectionTitle eyebrow="Metodología" title="Cómo se desarrolló el trabajo">
