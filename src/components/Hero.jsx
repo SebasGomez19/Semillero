@@ -19,16 +19,16 @@ export default function Hero() {
         <div>
           <Badge className="mb-5 bg-cyan-500/20 text-cyan-200">
             <Icons.Sparkles className="mr-2 h-4 w-4" />
-            Portafolio interactivo del semillero
+            Portafolio de actividades de semillero
           </Badge>
 
           <h1 className="title-glow max-w-4xl text-4xl font-black leading-tight tracking-tight md:text-6xl">
             TECSI: tecnología, investigación y educación
           </h1>
 
-          <p className="mt-5 max-w-2xl text-lg text-slate-300">
+          {/*<p className="mt-5 max-w-2xl text-lg text-slate-300">
             Una página tipo presentación interactiva para que el público escanee un QR y recorra desde su celular los años de capacitaciones, ponencias, proyectos e investigación.
-          </p>
+          </p>*/}
 
           <div className="mt-8 flex flex-wrap gap-3">
             <a href="#recorrido">
