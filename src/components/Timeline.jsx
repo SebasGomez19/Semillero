@@ -1,12 +1,20 @@
 import { useEffect, useRef, useState } from "react";
-import { years, eventsByYear } from "../data/portfolioData";
+import { eventsByCategory } from "../data/portfolioData";
 
 // ─── Colores por tipo de evento ────────────────────────────────────
 const typeConfig = {
   "Capacitación": { color: "#29ABE2", bg: "rgba(41,171,226,0.12)", icon: "🎓" },
-  "Ponencia": { color: "#39B54A", bg: "rgba(57,181,74,0.12)", icon: "🎤" },
-  "Producto": { color: "#F7931E", bg: "rgba(247,147,30,0.12)", icon: "📱" },
-  "Investigación": { color: "#BE63F9", bg: "rgba(190,99,249,0.12)", icon: "🔬" },
+  "Ponencia":     { color: "#39B54A", bg: "rgba(57,181,74,0.12)",  icon: "🎤" },
+  "Producto":     { color: "#F7931E", bg: "rgba(247,147,30,0.12)", icon: "📱" },
+  "Investigación":{ color: "#BE63F9", bg: "rgba(190,99,249,0.12)", icon: "🔬" },
+};
+
+// Configuración visual de cada categoría (encabezado de la tarjeta)
+const categoryConfig = {
+  "Productos":     { color: "#F7931E", bg: "rgba(247,147,30,0.12)",  icon: "📱", label: "Producto" },
+  "Capacitaciones":{ color: "#29ABE2", bg: "rgba(41,171,226,0.12)",  icon: "🎓", label: "Capacitación" },
+  "Ponencias":     { color: "#39B54A", bg: "rgba(57,181,74,0.12)",   icon: "🎤", label: "Ponencia" },
+  "Investigación": { color: "#BE63F9", bg: "rgba(190,99,249,0.12)",  icon: "🔬", label: "Investigación" },
 };
 
 // ─── Hook de animación por scroll ─────────────────────────────────
@@ -24,12 +32,12 @@ function useInView(threshold = 0.15) {
   return [ref, inView];
 }
 
-// ─── Modal (agregar antes del Drawer) ─────────────────────────────
+// ─── Modal ─────────────────────────────────────────────────────────
 function Modal({ m, onClose }) {
   useEffect(() => {
     const handler = (e) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", handler);
-    return () => { window.removeEventListener("keydown", handler); };
+    return () => window.removeEventListener("keydown", handler);
   }, [onClose]);
 
   return (
@@ -46,8 +54,7 @@ function Modal({ m, onClose }) {
         onClick={(e) => e.stopPropagation()}
         style={{
           position: "relative", width: "100%", maxWidth: 900,
-          borderRadius: 20, overflow: "hidden",
-          background: "#000",
+          borderRadius: 20, overflow: "hidden", background: "#000",
         }}
       >
         <button
@@ -70,8 +77,10 @@ function Modal({ m, onClose }) {
         )}
         {m.type === "youtube" && (
           <iframe
-            src={`https://www.youtube.com/embed/${(() => { try { const u = new URL(m.src); return u.searchParams.get("v") || u.pathname.split("/").pop(); } catch { return ""; } })()
-              }?autoplay=1&rel=0`}
+            src={`https://www.youtube.com/embed/${(() => {
+              try { const u = new URL(m.src); return u.searchParams.get("v") || u.pathname.split("/").pop(); }
+              catch { return ""; }
+            })()}?autoplay=1&rel=0`}
             title={m.caption}
             style={{ width: "100%", height: "70vh", border: "none" }}
             allow="autoplay; fullscreen" allowFullScreen
@@ -106,10 +115,12 @@ function Drawer({ event, onClose }) {
   const cfg = typeConfig[event.type] || typeConfig["Capacitación"];
 
   useEffect(() => {
-    const handler = (e) => { if (e.key === "Escape") {
-      if (modalItem) setModalItem(null);
-      else onClose();
-    }};
+    const handler = (e) => {
+      if (e.key === "Escape") {
+        if (modalItem) setModalItem(null);
+        else onClose();
+      }
+    };
     window.addEventListener("keydown", handler);
     document.body.style.overflow = "hidden";
     return () => {
@@ -126,8 +137,7 @@ function Drawer({ event, onClose }) {
         onClick={onClose}
         style={{
           position: "fixed", inset: 0, zIndex: 9998,
-          background: "rgba(0,0,0,0.6)",
-          backdropFilter: "blur(4px)",
+          background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)",
         }}
       />
       <div style={{
@@ -219,7 +229,7 @@ function Drawer({ event, onClose }) {
 }
 
 // ─── MediaThumb ────────────────────────────────────────────────────
-function MediaThumb({ m, onOpenModal }) {   // <- agrega onOpenModal
+function MediaThumb({ m, onOpenModal }) {
   const base = {
     height: 160, borderRadius: 14, overflow: "hidden",
     border: m.src ? "1px solid rgba(41,171,226,0.2)" : "1px dashed rgba(41,171,226,0.15)",
@@ -235,10 +245,8 @@ function MediaThumb({ m, onOpenModal }) {   // <- agrega onOpenModal
     </div>
   );
 
-  // Todos los tipos abren el modal directamente
   return (
     <div style={{ ...base, cursor: "pointer" }} onClick={() => onOpenModal(m)}>
-      {/* Preview de fondo */}
       {m.type === "video" && (
         <video src={m.src} muted playsInline
           style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.4, pointerEvents: "none" }} />
@@ -254,7 +262,6 @@ function MediaThumb({ m, onOpenModal }) {   // <- agrega onOpenModal
           style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
       )}
 
-      {/* Overlay con play */}
       <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.35)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2 }}>
         <div style={{ width: 44, height: 44, borderRadius: "50%", background: "rgba(41,171,226,0.25)", border: "2px solid #29ABE2", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <span style={{ color: "#29ABE2", fontSize: 18, marginLeft: m.type === "image" ? 0 : 3 }}>
@@ -269,10 +276,11 @@ function MediaThumb({ m, onOpenModal }) {   // <- agrega onOpenModal
     </div>
   );
 }
-// ─── Tarjeta de año ────────────────────────────────────────────────
-function YearCard({ item, index, onEventClick }) {
+
+// ─── Tarjeta de categoría ──────────────────────────────────────────
+function CategoryCard({ categoryName, events, index, onEventClick }) {
   const [ref, inView] = useInView();
-  const events = eventsByYear[item.year] || [];
+  const cfg = categoryConfig[categoryName] || categoryConfig["Capacitaciones"];
 
   return (
     <div
@@ -290,120 +298,84 @@ function YearCard({ item, index, onEventClick }) {
     >
       <style>{`
         @media (min-width: 1024px) {
-          .year-card-${index} { grid-template-columns: 0.55fr 1.45fr !important; align-items: center; }
+          .cat-card-${index} { grid-template-columns: 0.55fr 1.45fr !important; align-items: center; }
         }
       `}</style>
 
       <div
-        className={`year-card-${index}`}
+        className={`cat-card-${index}`}
         style={{ display: "grid", gridTemplateColumns: "1fr", gap: 24, padding: 24 }}
       >
-        {/* Visual del año */}
+        {/* Visual de la categoría */}
         <div style={{
           position: "relative", minHeight: 220, borderRadius: 20,
           border: "1px solid rgba(255,255,255,0.07)",
           background: "linear-gradient(135deg, rgba(26,78,159,0.4) 0%, #07152a 50%, rgba(41,171,226,0.1) 100%)",
           overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
         }}>
-          {item.image ? (
-            <>
-              <img src={item.image} alt={item.title}
-                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
-              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.65), transparent)" }} />
-              <p style={{ position: "absolute", bottom: 16, left: 20, fontSize: 44, fontWeight: 900, color: "#fff", margin: 0 }}>
-                {item.year}
-              </p>
-            </>
-          ) : (
-            <div style={{
-              borderRadius: 20, border: "1px solid rgba(41,171,226,0.2)",
-              background: "rgba(26,78,159,0.35)", padding: "32px 44px",
-              textAlign: "center", backdropFilter: "blur(8px)",
-            }}>
-              <p style={{ fontSize: 60, fontWeight: 900, color: "#29ABE2", margin: 0, lineHeight: 1 }}>
-                {item.year}
-              </p>
-              <p style={{ fontSize: 13, color: "#94a3b8", marginTop: 10, marginBottom: 0 }}>
-                {item.emotion}
-              </p>
-            </div>
-          )}
+          <div style={{
+            borderRadius: 20, border: `1px solid ${cfg.color}33`,
+            background: cfg.bg, padding: "32px 44px",
+            textAlign: "center", backdropFilter: "blur(8px)",
+          }}>
+            <p style={{ fontSize: 64, margin: 0, lineHeight: 1 }}>{cfg.icon}</p>
+            <p style={{ fontSize: 22, fontWeight: 900, color: cfg.color, margin: "12px 0 0", lineHeight: 1.1 }}>
+              {categoryName}
+            </p>
+            <p style={{ fontSize: 13, color: "#94a3b8", marginTop: 8, marginBottom: 0 }}>
+              {events.length} {events.length === 1 ? "actividad" : "actividades"}
+            </p>
+          </div>
         </div>
 
-        {/* Contenido */}
+        {/* Lista de eventos */}
         <div>
           <span style={{
             display: "inline-block", padding: "4px 14px", borderRadius: 99, fontSize: 12, fontWeight: 600,
-            border: "1px solid rgba(41,171,226,0.3)", background: "rgba(41,171,226,0.1)",
-            color: "#29ABE2", marginBottom: 14,
+            border: `1px solid ${cfg.color}44`, background: cfg.bg,
+            color: cfg.color, marginBottom: 20,
           }}>
-            {item.emotion}
+            {cfg.icon} {categoryName}
           </span>
 
-          <h3 style={{ fontSize: 26, fontWeight: 900, color: "#fff", margin: "0 0 12px" }}>
-            {item.title}
-          </h3>
-
-          <p style={{ fontSize: 15, color: "#94a3b8", lineHeight: 1.7, margin: 0 }}>
-            {item.story}
-          </p>
-
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 20, marginBottom: events.length ? 24 : 0 }}>
-            {item.highlights.map((h) => (
-              <span key={h} style={{
-                padding: "4px 12px", borderRadius: 99, fontSize: 12,
-                border: "1px solid rgba(41,171,226,0.2)",
-                background: "rgba(26,78,159,0.25)", color: "#cbd5e1",
-              }}>{h}</span>
-            ))}
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {events.map((event) => {
+              const evCfg = typeConfig[event.type] || typeConfig["Capacitación"];
+              return (
+                <div
+                  key={event.id}
+                  onClick={() => onEventClick(event)}
+                  style={{
+                    cursor: "pointer",
+                    display: "flex", alignItems: "center", gap: 12,
+                    padding: "9px 14px", borderRadius: 12,
+                    border: `1px solid ${evCfg.color}22`,
+                    background: "rgba(7,21,42,0.5)",
+                    transition: "all 0.2s",
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.border = `1px solid ${evCfg.color}55`;
+                    e.currentTarget.style.background = evCfg.bg;
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.border = `1px solid ${evCfg.color}22`;
+                    e.currentTarget.style.background = "rgba(7,21,42,0.5)";
+                  }}
+                >
+                  <span style={{ fontSize: 18, flexShrink: 0 }}>{evCfg.icon}</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: 10, fontWeight: 700, color: evCfg.color, textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 2px" }}>
+                      {event.date}
+                    </p>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: "#e2e8f0", margin: 0, lineHeight: 1.3 }}>
+                      {event.title}
+                    </p>
+                  </div>
+                  <span style={{ color: "#334155", fontSize: 18, flexShrink: 0 }}>›</span>
+                </div>
+              );
+            })}
           </div>
-
-          {/* Eventos clickeables */}
-          {events.length > 0 && (
-            <>
-              <p style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.12em", color: "#475569", marginBottom: 10 }}>
-                Eventos
-              </p>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {events.map((event) => {
-                  const cfg = typeConfig[event.type] || typeConfig["Capacitación"];
-                  return (
-                    <div
-                      key={event.id}
-                      onClick={() => onEventClick(event)}
-                      style={{
-                        cursor: "pointer",
-                        display: "flex", alignItems: "center", gap: 12,
-                        padding: "9px 14px", borderRadius: 12,
-                        border: `1px solid ${cfg.color}22`,
-                        background: "rgba(7,21,42,0.5)",
-                        transition: "all 0.2s",
-                      }}
-                      onMouseEnter={e => {
-                        e.currentTarget.style.border = `1px solid ${cfg.color}55`;
-                        e.currentTarget.style.background = cfg.bg;
-                      }}
-                      onMouseLeave={e => {
-                        e.currentTarget.style.border = `1px solid ${cfg.color}22`;
-                        e.currentTarget.style.background = "rgba(7,21,42,0.5)";
-                      }}
-                    >
-                      <span style={{ fontSize: 18, flexShrink: 0 }}>{cfg.icon}</span>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ fontSize: 10, fontWeight: 700, color: cfg.color, textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 2px" }}>
-                          {event.type}
-                        </p>
-                        <p style={{ fontSize: 13, fontWeight: 700, color: "#e2e8f0", margin: 0, lineHeight: 1.3 }}>
-                          {event.title}
-                        </p>
-                      </div>
-                      <span style={{ color: "#334155", fontSize: 18, flexShrink: 0 }}>›</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </>
-          )}
         </div>
       </div>
     </div>
@@ -427,7 +399,7 @@ export default function Timeline() {
           border: "1px solid rgba(41,171,226,0.3)", background: "rgba(41,171,226,0.1)",
           color: "#29ABE2", marginBottom: 12,
         }}>
-          Recorrido año a año
+          Lo que hicimos
         </span>
         <h2 style={{ fontSize: "clamp(28px,4vw,48px)", fontWeight: 900, color: "#fff", margin: "0 0 12px", textShadow: "0 0 18px rgba(41,171,226,0.45)" }}>
           Lo que se vivió en el semillero
@@ -437,12 +409,16 @@ export default function Timeline() {
         </p>
       </div>
 
-      {years.map((item, index) => (
-        <YearCard key={item.year} item={item} index={index} onEventClick={setSelectedEvent} />
+      {Object.entries(eventsByCategory).map(([categoryName, events], index) => (
+        <CategoryCard
+          key={categoryName}
+          categoryName={categoryName}
+          events={events}
+          index={index}
+          onEventClick={setSelectedEvent}
+        />
       ))}
 
     </section>
   );
-
-
 }
