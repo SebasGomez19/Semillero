@@ -69,8 +69,8 @@ export default function ARModal({ isOpen, onClose, modelUrl = "/models/avatarJul
             const scene = new THREE.Scene();
             sceneRef.current = scene;
 
-            const camera = new THREE.PerspectiveCamera(50, w / h, 0.1, 2000);
-            camera.position.set(0, 100, 300);
+            const camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 2000);
+            camera.position.set(0, 50, 180);
 
             const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
             renderer.setSize(w, h);
@@ -97,9 +97,9 @@ export default function ARModal({ isOpen, onClose, modelUrl = "/models/avatarJul
                     const maxDim = Math.max(size.x, size.y, size.z);
                     const scale = 150 / maxDim;
                     object.scale.setScalar(scale);
-                    const center = box.getCenter(new THREE.Vector3()).multiplyScalar(scale);
-                    object.position.sub(center);
-                    object.position.y -= 20;
+                    const box2 = new THREE.Box3().setFromObject(object); // recalcular tras escalar
+                    const center = box2.getCenter(new THREE.Vector3());
+                    object.position.set(-center.x, -center.y, -center.z); // centrar exacto en 0,0,0
                     // Quitar objetos esféricos o con nombre específico
                     object.traverse((child) => {
                         if (child.isMesh) {
@@ -137,7 +137,7 @@ export default function ARModal({ isOpen, onClose, modelUrl = "/models/avatarJul
                 const delta = clock.getDelta();
                 mixerRef.current?.update(delta);
                 scene.rotation.y += 0.004;
-                scene.position.y = Math.sin(Date.now() * 0.0015) * 8;
+                scene.position.y = Math.sin(Date.now() * 0.0015) * 3;
                 renderer.render(scene, camera);
             }
             animate();
