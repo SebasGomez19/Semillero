@@ -3,18 +3,26 @@ import { eventsByCategory } from "../data/portfolioData";
 
 // ─── Colores por tipo de evento ────────────────────────────────────
 const typeConfig = {
-  "Capacitación": { color: "#29ABE2", bg: "rgba(41,171,226,0.12)", icon: "🎓" },
-  "Ponencia":     { color: "#39B54A", bg: "rgba(57,181,74,0.12)",  icon: "🎤" },
-  "Producto":     { color: "#F7931E", bg: "rgba(247,147,30,0.12)", icon: "📱" },
-  "Investigación":{ color: "#BE63F9", bg: "rgba(190,99,249,0.12)", icon: "🔬" },
+  "Póster":        { color: "#29ABE2", bg: "rgba(41,171,226,0.12)",  icon: "🖼️"  },
+  "Capacitación":  { color: "#39B54A", bg: "rgba(57,181,74,0.12)",   icon: "🎓"  },
+  "Ponencia":      { color: "#F7931E", bg: "rgba(247,147,30,0.12)",  icon: "🎤"  },
+  "Investigación": { color: "#BE63F9", bg: "rgba(190,99,249,0.12)",  icon: "🔬"  },
+  "Codirección":   { color: "#F9A63A", bg: "rgba(249,166,58,0.12)",  icon: "🎓"  },
+  "Taller":        { color: "#FF6B6B", bg: "rgba(255,107,107,0.12)", icon: "🛠️"  },
+  "Participación": { color: "#4ECDC4", bg: "rgba(78,205,196,0.12)",  icon: "🙋"  },
+  "Producto":      { color: "#F7931E", bg: "rgba(247,147,30,0.12)",  icon: "📱"  },
 };
 
-// Configuración visual de cada categoría (encabezado de la tarjeta)
+// ─── Colores por categoría (encabezado de tarjeta) ─────────────────
 const categoryConfig = {
-  "Productos":     { color: "#F7931E", bg: "rgba(247,147,30,0.12)",  icon: "📱", label: "Producto" },
-  "Capacitaciones":{ color: "#29ABE2", bg: "rgba(41,171,226,0.12)",  icon: "🎓", label: "Capacitación" },
-  "Ponencias":     { color: "#39B54A", bg: "rgba(57,181,74,0.12)",   icon: "🎤", label: "Ponencia" },
-  "Investigación": { color: "#BE63F9", bg: "rgba(190,99,249,0.12)",  icon: "🔬", label: "Investigación" },
+  "Póster":                    { color: "#29ABE2", bg: "rgba(41,171,226,0.12)",  icon: "🖼️",  label: "Póster"                    },
+  "Capacitaciones":            { color: "#39B54A", bg: "rgba(57,181,74,0.12)",   icon: "🎓",  label: "Capacitaciones"            },
+  "Participaciones / Ponencias":{ color: "#F7931E", bg: "rgba(247,147,30,0.12)", icon: "🎤",  label: "Participaciones / Ponencias"},
+  "Investigaciones":           { color: "#BE63F9", bg: "rgba(190,99,249,0.12)",  icon: "🔬",  label: "Investigaciones"           },
+  "Codirección":               { color: "#F9A63A", bg: "rgba(249,166,58,0.12)",  icon: "📋",  label: "Codirección"               },
+  "Talleres":                  { color: "#FF6B6B", bg: "rgba(255,107,107,0.12)", icon: "🛠️",  label: "Talleres"                  },
+  "Participaciones":           { color: "#4ECDC4", bg: "rgba(78,205,196,0.12)",  icon: "🙋",  label: "Participaciones"           },
+  "Productos":                 { color: "#F7931E", bg: "rgba(247,147,30,0.12)",  icon: "📱",  label: "Productos"                 },
 };
 
 // ─── Hook de animación por scroll ─────────────────────────────────
@@ -280,7 +288,9 @@ function MediaThumb({ m, onOpenModal }) {
 // ─── Tarjeta de categoría ──────────────────────────────────────────
 function CategoryCard({ categoryName, events, index, onEventClick }) {
   const [ref, inView] = useInView();
-  const cfg = categoryConfig[categoryName] || categoryConfig["Capacitaciones"];
+  const cfg = categoryConfig[categoryName] || {
+    color: "#29ABE2", bg: "rgba(41,171,226,0.12)", icon: "📌", label: categoryName,
+  };
 
   return (
     <div
@@ -319,7 +329,7 @@ function CategoryCard({ categoryName, events, index, onEventClick }) {
             textAlign: "center", backdropFilter: "blur(8px)",
           }}>
             <p style={{ fontSize: 64, margin: 0, lineHeight: 1 }}>{cfg.icon}</p>
-            <p style={{ fontSize: 22, fontWeight: 900, color: cfg.color, margin: "12px 0 0", lineHeight: 1.1 }}>
+            <p style={{ fontSize: 20, fontWeight: 900, color: cfg.color, margin: "12px 0 0", lineHeight: 1.2 }}>
               {categoryName}
             </p>
             <p style={{ fontSize: 13, color: "#94a3b8", marginTop: 8, marginBottom: 0 }}>
@@ -335,12 +345,12 @@ function CategoryCard({ categoryName, events, index, onEventClick }) {
             border: `1px solid ${cfg.color}44`, background: cfg.bg,
             color: cfg.color, marginBottom: 20,
           }}>
-            {cfg.icon} {categoryName}
+            {cfg.icon} {cfg.label}
           </span>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {events.map((event) => {
-              const evCfg = typeConfig[event.type] || typeConfig["Capacitación"];
+              const evCfg = typeConfig[event.type] || { color: "#29ABE2", bg: "rgba(41,171,226,0.12)", icon: "📌" };
               return (
                 <div
                   key={event.id}

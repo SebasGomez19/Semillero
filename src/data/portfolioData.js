@@ -76,38 +76,48 @@ export const years = [
 // ─── Eventos por categoría ─────────────────────────────────────────────
 export const eventsByCategory = {
 
-  "Productos": [
+  "Póster": [
     {
-      id: "prod-1", type: "Producto", title: "NeuroInfo", date: "2024",
-      description: "Propuesta de aplicación móvil que une neurociencia, realidad aumentada y aprendizaje interactivo. Fue presentada en múltiples eventos académicos.",
-      highlights: ["App móvil", "Neurociencia + RA", "Aprendizaje interactivo"],
-      image: null, media: [
-        { type: "youtube", src: null, caption: "Demo NeuroInfo" },
-        { type: "image",   src: null, caption: "Pantallas de la app" },
-        { type: "image",   src: null, caption: "Póster ENIIU" },
-      ],
-    },
-    {
-      id: "prod-2", type: "Producto", title: "Alto Chicamocha RA", date: "2025",
-      description: "Aplicación móvil funcional para comprender sistemas de energías renovables mediante realidad aumentada y gamificación.",
-      highlights: ["App móvil", "Energías renovables", "Gamificación", "RA"],
-      image: null, media: [
-        { type: "video", src: "/videos/videoJuego.mp4", caption: "Demo Alto Chicamocha" },
-        { type: "image", src: null, caption: "Interfaz de la app" },
-        { type: "image", src: null, caption: "Interfaz de la app" },
-      ],
-    },
-    {
-      id: "prod-3", type: "Producto", title: "Portafolio interactivo TECSI", date: "2026",
-      description: "Desarrollo del portafolio interactivo del semillero: una experiencia web accesible por QR que recoge toda la trayectoria investigativa.",
-      highlights: ["Portafolio web", "QR interactivo", "Legado del semillero"],
+      id: "poster-1", type: "Póster", title: "I Encuentro de Semilleros", date: "2022",
+      description: "Presentación del primer póster en el I Encuentro de Semilleros. Primer paso en la trayectoria investigativa del grupo.",
+      highlights: ["Primer póster", "Inicio del semillero", "Divulgación académica"],
       image: null, media: [],
+    },
+    {
+      id: "poster-2", type: "Póster", title: "CyberTech Women", date: "2024",
+      description: "Presentación de póster en el evento CyberTech Women 2024.",
+      highlights: ["CyberTech Women", "Póster académico"],
+      image: null, media: [
+        { type: "image", src: null, caption: "Póster CyberTech Women 2024" },
+      ],
+    },
+    {
+      id: "poster-3", type: "Póster", title: "CHICAMOCHA V — Encuentro de Semilleros", date: "2025",
+      description: "Participación con póster en el V Encuentro de Semilleros de Investigación de la Facultad de Ingeniería y Ciencias Básicas.",
+      highlights: ["CHICAMOCHA", "Facultad de Ingeniería", "Semilleros"],
+      image: null, media: [
+        { type: "image", src: null, caption: "Póster CHICAMOCHA V 2025" },
+      ],
+    },
+    {
+      id: "poster-4", type: "Póster", title: "CyberTech Women", date: "2026",
+      description: "Presentación de póster en el evento CyberTech Women 2026.",
+      highlights: ["CyberTech Women", "Póster académico"],
+      image: null, media: [
+        { type: "image", src: null, caption: "Póster CyberTech Women 2026" },
+      ],
     },
   ],
 
   "Capacitaciones": [
     {
-      id: "cap-1", type: "Capacitación", title: "Taller RA — Comfaboy", date: "2023",
+      id: "cap-1", type: "Capacitación", title: "Taller RA — Colegio Libertador Simón Bolívar", date: "2023",
+      description: "Capacitación en herramientas de realidad aumentada para estudiantes del Colegio Libertador Simón Bolívar.",
+      highlights: ["Simón Bolívar", "Herramientas RA", "Impacto escolar"],
+      image: null, media: [{ type: "image", src: null, caption: "Estudiantes Simón Bolívar" }],
+    },
+    {
+      id: "cap-2", type: "Capacitación", title: "Taller RA — Comfaboy", date: "2023",
       description: "Capacitación de realidad aumentada dirigida a estudiantes de Comfaboy. Primera experiencia de transferencia tecnológica a instituciones externas.",
       highlights: ["Comfaboy", "RA educativa", "Estudiantes secundaria"],
       image: null, media: [
@@ -116,61 +126,61 @@ export const eventsByCategory = {
       ],
     },
     {
-      id: "cap-2", type: "Capacitación", title: "Taller RA — Simón Bolívar", date: "2023",
-      description: "Capacitación en herramientas de realidad aumentada para estudiantes del colegio Simón Bolívar.",
-      highlights: ["Simón Bolívar", "Herramientas RA", "Impacto escolar"],
-      image: null, media: [{ type: "image", src: null, caption: "Estudiantes Simón Bolívar" }],
-    },
-    {
       id: "cap-3", type: "Capacitación", title: "Taller RA — Guillermo León Valencia", date: "2023",
       description: "Actividad práctica de realidad aumentada con estudiantes del colegio Guillermo León Valencia.",
       highlights: ["Guillermo León Valencia", "Práctica RA"],
       image: null, media: [],
     },
     {
-      id: "cap-4", type: "Capacitación", title: "Taller RA — UPTC", date: "2023",
-      description: "Sesión de capacitación en la Universidad Pedagógica y Tecnológica de Colombia, integrando RA en contextos universitarios.",
-      highlights: ["UPTC", "Contexto universitario", "RA aplicada"],
-      image: null, media: [{ type: "image", src: null, caption: "Actividad UPTC" }],
+      id: "cap-4", type: "Capacitación", title: "Taller RA — Instituto Técnico Gonzalo Suárez Rendón", date: "2024",
+      description: "Capacitación de realidad aumentada en el Instituto Técnico Gonzalo Suárez Rendón.",
+      highlights: ["Gonzalo Suárez Rendón", "RA aplicada"],
+      image: null, media: [{ type: "image", src: null, caption: "Actividad ITGSR" }],
     },
     {
       id: "cap-5", type: "Capacitación", title: "Taller RA — Colegio Boyacá", date: "2024",
-      description: "Capacitación de realidad aumentada con estudiantes de grado 11 del Colegio Boyacá.",
-      highlights: ["Colegio Boyacá", "Grado 11", "RA aplicada"],
+      description: "Capacitación de realidad aumentada con estudiantes del Colegio Boyacá.",
+      highlights: ["Colegio Boyacá", "Realidad aumentada"],
       image: null, media: [{ type: "image", src: null, caption: "Estudiantes Colegio Boyacá" }],
     },
     {
-      id: "cap-6", type: "Capacitación", title: "Taller RA + IA — Chiquinquirá", date: "2025",
-      description: "Capacitación de realidad aumentada e inteligencia artificial en Chiquinquirá. Primera integración formal de IA en los talleres.",
+      id: "cap-6", type: "Capacitación", title: "Taller RA — Colegio Villa de Leyva", date: "2025",
+      description: "Capacitación dirigida a estudiantes en Villa de Leyva, incorporando experiencias inmersivas con RA.",
+      highlights: ["Villa de Leyva", "Experiencias inmersivas"],
+      image: null, media: [{ type: "image", src: null, caption: "Taller Villa de Leyva" }],
+    },
+    {
+      id: "cap-7", type: "Capacitación", title: "Taller RA — Colegio Diego Torres Turmequé", date: "2025",
+      description: "Capacitación con estudiantes del Colegio Diego Torres en Turmequé.",
+      highlights: ["Turmequé", "Diego Torres", "RA"],
+      image: null, media: [{ type: "image", src: null, caption: "Taller Turmequé" }],
+    },
+    {
+      id: "cap-8", type: "Capacitación", title: "Taller RA + IA — Colegio Chiquinquirá", date: "2025",
+      description: "Primera integración formal de inteligencia artificial en los talleres de realidad aumentada, en Chiquinquirá.",
       highlights: ["Chiquinquirá", "RA + IA", "Nuevo formato"],
       image: null, media: [
         { type: "video", src: null, caption: "Video capacitación" },
         { type: "image", src: null, caption: "Actividad con estudiantes" },
       ],
     },
-    {
-      id: "cap-7", type: "Capacitación", title: "VI Feria Universitaria — Turmequé", date: "2025",
-      description: "Participación en la VI Feria Universitaria de Turmequé con demostración de aplicaciones de RA y gamificación.",
-      highlights: ["Turmequé", "Feria universitaria", "Gamificación"],
-      image: null, media: [{ type: "image", src: null, caption: "Feria Turmequé" }],
-    },
-    {
-      id: "cap-8", type: "Capacitación", title: "Taller RA — Villa de Leyva", date: "2025",
-      description: "Capacitación dirigida a estudiantes de grado 10 en Villa de Leyva, incorporando experiencias inmersivas con RA.",
-      highlights: ["Villa de Leyva", "Grado 10", "Experiencias inmersivas"],
-      image: null, media: [{ type: "image", src: null, caption: "Taller Villa de Leyva" }],
-    },
   ],
 
-  "Ponencias": [
+  "Participaciones / Ponencias": [
     {
-      id: "pon-1", type: "Ponencia", title: "Primer póster académico", date: "2022",
-      description: "Presentación del primer póster en encuentro de semilleros. Primer paso en la trayectoria investigativa del grupo.",
-      highlights: ["Primer póster", "Inicio del semillero", "Divulgación académica"],
+      id: "pon-1", type: "Ponencia", title: "Tercer Simposio Tejiendo Humanidad", date: "2023",
+      description: "Participación en el Tercer Simposio Tejiendo Humanidad con presentación de avances del semillero.",
+      highlights: ["Simposio", "Tejiendo Humanidad", "Divulgación"],
       image: null, media: [],
     },
     {
-      id: "pon-2", type: "Ponencia", title: "CyberTech Women — UNAD", date: "2024",
+      id: "pon-2", type: "Ponencia", title: "ENIIU — Encuentro Nacional de Investigación", date: "2024",
+      description: "Participación en el Encuentro Nacional de Investigación e Innovación Universitaria con póster y presentación oral.",
+      highlights: ["ENIIU", "Investigación", "Póster académico"],
+      image: null, media: [{ type: "image", src: null, caption: "Póster ENIIU" }],
+    },
+    {
+      id: "pon-3", type: "Ponencia", title: "CyberTech Women — UNAD", date: "2024",
       description: "Presentación de NeuroInfo en el evento CyberTech Women de la UNAD. Primer reconocimiento externo del proyecto.",
       highlights: ["CyberTech Women", "UNAD", "NeuroInfo"],
       image: null, media: [
@@ -179,25 +189,94 @@ export const eventsByCategory = {
       ],
     },
     {
-      id: "pon-3", type: "Ponencia", title: "ENIIU 2024", date: "2024",
-      description: "Participación en el Encuentro Nacional de Investigación e Innovación Universitaria con póster y presentación oral.",
-      highlights: ["ENIIU", "Investigación", "Póster académico"],
-      image: null, media: [{ type: "image", src: null, caption: "Póster ENIIU" }],
+      id: "pon-4", type: "Ponencia", title: "Metodologías activas — RA para actividad física y deporte", date: "2025",
+      description: "Ponencia sobre el uso de la realidad aumentada en metodologías activas en educación física y deportes.",
+      highlights: ["Educación física", "Deporte", "RA", "Metodologías activas"],
+      image: null, media: [],
     },
   ],
 
-  "Investigación": [
+  "Investigaciones": [
     {
-      id: "inv-1", type: "Investigación", title: "Inicio del semillero TECSI", date: "2022",
-      description: "Formación oficial del semillero de investigación, definiendo las líneas de trabajo en tecnología educativa, RA e IA.",
-      highlights: ["Líneas de investigación", "Primer equipo"],
+      id: "inv-1", type: "Investigación", title: "NeuroInfo", date: "2024",
+      description: "Propuesta de aplicación móvil que une neurociencia, realidad aumentada y aprendizaje interactivo. Presentada en múltiples eventos académicos.",
+      highlights: ["App móvil", "Neurociencia + RA", "Aprendizaje interactivo"],
+      image: null, media: [
+        { type: "youtube", src: null, caption: "Demo NeuroInfo" },
+        { type: "image",   src: null, caption: "Pantallas de la app" },
+        { type: "image",   src: null, caption: "Póster ENIIU" },
+      ],
+    },
+    {
+      id: "inv-2", type: "Investigación", title: "Revisión sistemática — RA e IA en educación veterinaria", date: "2026",
+      description: "Artículo de revisión sistemática sobre el potencial de la RA e IA para el aprendizaje interactivo en educación veterinaria.",
+      highlights: ["Artículo académico", "Revisión sistemática", "Medicina veterinaria"],
+      image: null, media: [{ type: "image", src: null, caption: "Portada del artículo" }],
+    },
+  ],
+
+  "Codirección": [
+    {
+      id: "codir-1", type: "Codirección", title: "Co-directora de trabajos de grado — San Jerónimo Emiliani", date: "2024",
+      description: "Co-directora de trabajos de grado en modalidades técnicas de la institución San Jerónimo Emiliani.",
+      highlights: ["San Jerónimo Emiliani", "Trabajos de grado", "Modalidades técnicas"],
+      image: null, media: [],
+    },
+  ],
+
+  "Talleres": [
+    {
+      id: "taller-1", type: "Taller", title: "Evento eSports — Taller RA y RV", date: "2025",
+      description: "Participación en evento de eSports con taller de realidad aumentada y realidad virtual.",
+      highlights: ["eSports", "RA", "RV"],
+      image: null, media: [
+        { type: "video", src: null, caption: "Video taller eSports" },
+        { type: "image", src: null, caption: "Actividad RA y RV" },
+      ],
+    },
+  ],
+
+  "Participaciones": [
+    {
+      id: "part-1", type: "Participación", title: "Charla — Introducción a la Ingeniería de Sistemas", date: "2023",
+      description: "Charla introductoria sobre Ingeniería de Sistemas dirigida a estudiantes interesados en la carrera.",
+      highlights: ["Ingeniería de Sistemas", "Charla", "Orientación vocacional"],
       image: null, media: [],
     },
     {
-      id: "inv-2", type: "Investigación", title: "Revisión sistemática — RA e IA en veterinaria", date: "2026",
-      description: "Artículo de revisión sistemática sobre el potencial de RA e IA para el aprendizaje interactivo en educación veterinaria.",
-      highlights: ["Artículo académico", "Revisión sistemática", "Medicina veterinaria"],
-      image: null, media: [{ type: "image", src: null, caption: "Portada del artículo" }],
+      id: "part-2", type: "Participación", title: "Aplicación RA — Inauguración Doctorado en TI", date: "2025",
+      description: "Demostración de aplicación de realidad aumentada en la inauguración del Doctorado en Tecnologías de la Información.",
+      highlights: ["Doctorado", "Tecnologías de la Información", "RA", "Inauguración"],
+      image: null, media: [
+        { type: "image", src: null, caption: "Demostración RA doctorado" },
+      ],
+    },
+  ],
+
+  "Productos": [
+    {
+      id: "prod-1", type: "Producto", title: "Plataforma Gestión de Egresados", date: "2024",
+      description: "Desarrollo de plataforma web para la gestión y seguimiento de egresados de la institución.",
+      highlights: ["Plataforma web", "Egresados", "Gestión"],
+      image: null, media: [
+        { type: "image", src: null, caption: "Interfaz plataforma" },
+      ],
+    },
+    {
+      id: "prod-2", type: "Producto", title: "Alto Chicamocha RA — Gamificación e Inmersión", date: "2025",
+      description: "Aplicación móvil funcional para comprender sistemas de energías renovables mediante realidad aumentada y gamificación.",
+      highlights: ["App móvil", "Energías renovables", "Gamificación", "RA"],
+      image: null, media: [
+        { type: "video", src: "/videos/videoJuego.mp4", caption: "Demo Alto Chicamocha" },
+        { type: "image", src: null, caption: "Interfaz de la app" },
+        { type: "image", src: null, caption: "Interfaz gamificación" },
+      ],
+    },
+    {
+      id: "prod-3", type: "Producto", title: "Portafolio interactivo TECSI", date: "2026",
+      description: "Desarrollo del portafolio interactivo del semillero: una experiencia web accesible por QR que recoge toda la trayectoria investigativa.",
+      highlights: ["Portafolio web", "QR interactivo", "Legado del semillero"],
+      image: null, media: [],
     },
   ],
 };
