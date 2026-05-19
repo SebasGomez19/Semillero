@@ -118,6 +118,276 @@ function Modal({ m, onClose }) {
   );
 }
 
+// ─── MediaCarousel ─────────────────────────────────────────────────
+function MediaCarousel({ media, onOpenModal, cfg }) {
+  const [current, setCurrent] = useState(0);
+  const total = media.length;
+
+  const prev = (e) => { e.stopPropagation(); setCurrent((c) => (c - 1 + total) % total); };
+  const next = (e) => { e.stopPropagation(); setCurrent((c) => (c + 1) % total); };
+
+  const m = media[current];
+
+  const getYoutubeId = (src) => {
+    try {
+      const u = new URL(src);
+      return u.searchParams.get("v") || u.pathname.split("/").pop();
+    } catch { return ""; }
+  };
+
+  const getThumbnail = (item) => {
+    if (item.type === "youtube") {
+      const id = getYoutubeId(item.src);
+      return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : null;
+    }
+    if (item.type === "image" || item.type === "poster") return item.src;
+    return null;
+  };
+
+  const isPlayable = m && m.src && (m.type === "video" || m.type === "youtube" || m.type === "drive");
+  const isImage = m && m.src && (m.type === "image" || m.type === "poster");
+
+  return (
+    <div>
+      <p style={{
+        fontSize: 11, textTransform: "uppercase",
+        letterSpacing: "0.15em", color: "#475569", marginBottom: 12,
+      }}>
+        Evidencias
+      </p>
+
+      {/* ── Slide principal ── */}
+      <div style={{
+        position: "relative",
+        borderRadius: 16,
+        overflow: "hidden",
+        background: "#07152a",
+        border: `1px solid ${cfg.color}33`,
+      }}>
+        {/* Zona clickeable */}
+        <div
+          onClick={() => m && m.src && onOpenModal(m)}
+          style={{ cursor: m && m.src ? "pointer" : "default" }}
+        >
+          {/* Sin src */}
+          {(!m || !m.src) && (
+            <div style={{
+              height: 200, display: "flex", flexDirection: "column",
+              alignItems: "center", justifyContent: "center", gap: 6,
+            }}>
+              <span style={{ fontSize: 32, opacity: 0.3 }}>📎</span>
+              <p style={{ fontSize: 12, color: "#334155", textAlign: "center", margin: 0 }}>
+                {m?.caption || "Sin contenido"}<br />
+                <span style={{ fontSize: 10 }}>pendiente</span>
+              </p>
+            </div>
+          )}
+
+          {/* Imagen / Póster: tamaño natural, sin recorte */}
+          {isImage && (
+            <img
+              src={m.src}
+              alt={m.caption}
+              style={{
+                display: "block",
+                width: "100%",
+                height: "auto",        // respeta proporción original
+                objectFit: "unset",    // sin recorte
+              }}
+            />
+          )}
+
+          {/* Video local */}
+          {m && m.src && m.type === "video" && (
+            <div style={{ position: "relative", height: 240 }}>
+              <video
+                src={m.src} muted playsInline
+                style={{
+                  position: "absolute", inset: 0,
+                  width: "100%", height: "100%",
+                  objectFit: "cover", opacity: 0.5,
+                  pointerEvents: "none",
+                }}
+              />
+              <PlayOverlay color={cfg.color} />
+            </div>
+          )}
+
+          {/* YouTube */}
+          {m && m.src && m.type === "youtube" && (() => {
+            const thumb = getThumbnail(m);
+            return (
+              <div style={{ position: "relative", height: 240 }}>
+                {thumb && (
+                  <img
+                    src={thumb} alt={m.caption}
+                    style={{
+                      position: "absolute", inset: 0,
+                      width: "100%", height: "100%",
+                      objectFit: "cover", opacity: 0.65,
+                    }}
+                  />
+                )}
+                <PlayOverlay color={cfg.color} />
+              </div>
+            );
+          })()}
+
+          {/* Google Drive */}
+          {m && m.src && m.type === "drive" && (
+            <div style={{
+              height: 240, display: "flex",
+              alignItems: "center", justifyContent: "center",
+              position: "relative",
+            }}>
+              <PlayOverlay color={cfg.color} />
+            </div>
+          )}
+
+          {/* Caption superpuesto */}
+          {m && m.caption && m.src && (
+            <div style={{
+              background: "linear-gradient(to top, rgba(7,21,42,0.9) 0%, transparent 100%)",
+              padding: "20px 14px 10px",
+            }}>
+              <p style={{ margin: 0, fontSize: 12, color: "#94a3b8" }}>{m.caption}</p>
+            </div>
+          )}
+        </div>
+
+        {/* Flechas */}
+        {total > 1 && (
+          <>
+            <button onClick={prev} style={arrowStyle("left", cfg.color)}>‹</button>
+            <button onClick={next} style={arrowStyle("right", cfg.color)}>›</button>
+          </>
+        )}
+
+        {/* Contador */}
+        {total > 1 && (
+          <div style={{
+            position: "absolute", top: 10, right: 10,
+            background: "rgba(7,21,42,0.82)", borderRadius: 99,
+            padding: "3px 10px", fontSize: 11, color: "#94a3b8", zIndex: 10,
+            pointerEvents: "none",
+          }}>
+            {current + 1} / {total}
+          </div>
+        )}
+      </div>
+
+      {/* ── Puntos ── */}
+      {total > 1 && (
+        <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 10 }}>
+          {media.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrent(i)}
+              style={{
+                width: i === current ? 20 : 6,
+                height: 6,
+                borderRadius: 99,
+                border: "none",
+                cursor: "pointer",
+                background: i === current ? cfg.color : "rgba(41,171,226,0.2)",
+                transition: "all 0.25s",
+                padding: 0,
+              }}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* ── Miniaturas ── */}
+      {total > 1 && (
+        <div style={{
+          display: "flex", gap: 8, marginTop: 12,
+          overflowX: "auto", paddingBottom: 4,
+        }}>
+          {media.map((item, i) => {
+            const thumb = getThumbnail(item);
+            const active = i === current;
+            return (
+              <div
+                key={i}
+                onClick={() => setCurrent(i)}
+                style={{
+                  flexShrink: 0,
+                  width: 64, height: 48,
+                  borderRadius: 8, overflow: "hidden",
+                  border: `2px solid ${active ? cfg.color : "rgba(41,171,226,0.15)"}`,
+                  background: "#07152a",
+                  cursor: "pointer",
+                  position: "relative",
+                  opacity: active ? 1 : 0.55,
+                  transition: "border-color 0.2s, opacity 0.2s",
+                }}
+              >
+                {thumb ? (
+                  <img
+                    src={thumb} alt=""
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  />
+                ) : (
+                  <div style={{
+                    width: "100%", height: "100%",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                  }}>
+                    <span style={{ fontSize: 16 }}>
+                      {item.type === "video" || item.type === "youtube" || item.type === "drive"
+                        ? "▶" : "📄"}
+                    </span>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Helpers del carrusel ──────────────────────────────────────────
+function PlayOverlay({ color }) {
+  return (
+    <div style={{
+      position: "absolute", inset: 0,
+      background: "rgba(0,0,0,0.3)",
+      display: "flex", alignItems: "center", justifyContent: "center",
+      zIndex: 2,
+    }}>
+      <div style={{
+        width: 52, height: 52, borderRadius: "50%",
+        background: "rgba(7,21,42,0.7)",
+        border: `2px solid ${color}`,
+        display: "flex", alignItems: "center", justifyContent: "center",
+      }}>
+        <span style={{ color, fontSize: 22, marginLeft: 4 }}>▶</span>
+      </div>
+    </div>
+  );
+}
+
+function arrowStyle(side, color) {
+  return {
+    position: "absolute",
+    [side]: 10,
+    top: "50%",
+    transform: "translateY(-50%)",
+    width: 34, height: 34,
+    borderRadius: "50%",
+    border: `1px solid ${color}55`,
+    background: "rgba(7,21,42,0.85)",
+    color,
+    cursor: "pointer",
+    fontSize: 22,
+    display: "flex", alignItems: "center", justifyContent: "center",
+    zIndex: 10,
+    lineHeight: 1,
+  };
+}
+
 // ─── Drawer ────────────────────────────────────────────────────────
 function Drawer({ event, onClose }) {
   const [modalItem, setModalItem] = useState(null);
@@ -164,125 +434,104 @@ function Drawer({ event, onClose }) {
             from { transform: translateY(100%); opacity: 0; }
             to   { transform: translateY(0);    opacity: 1; }
           }
-          .drawer-media-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
-          @media (min-width: 640px) { .drawer-media-grid { grid-template-columns: 1fr 1fr; } }
         `}</style>
 
-        <div style={{ display: "flex", justifyContent: "center", padding: "12px 0 0" }}>
-          <div style={{ width: 40, height: 4, borderRadius: 99, background: "rgba(255,255,255,0.15)" }} />
-        </div>
+        {/* ══ SECCIÓN SUPERIOR: imagen representativa ══ */}
+        <div style={{ position: "relative" }}>
 
-        <div style={{ padding: "16px 24px 40px" }}>
-          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20 }}>
-            <div style={{ flex: 1 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-                <span style={{
-                  padding: "4px 12px", borderRadius: 99, fontSize: 12, fontWeight: 700,
-                  background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.color}44`,
-                }}>
-                  {cfg.icon} {event.type}
-                </span>
-                <span style={{ fontSize: 12, color: "#475569" }}>{event.date}</span>
-              </div>
-              <h3 style={{ fontSize: "clamp(20px,3vw,28px)", fontWeight: 900, color: "#fff", margin: 0, lineHeight: 1.2 }}>
-                {event.title}
-              </h3>
+          {event.image ? (
+            <div style={{ position: "relative" }}>
+              <img
+                src={event.image}
+                alt={event.title}
+                style={{ width: "100%", height: "auto", display: "block" }}
+              />
+              {/* Gradiente para legibilidad del texto */}
+              <div style={{
+                position: "absolute", inset: 0,
+                background: "linear-gradient(to top, #0d2040 0%, rgba(13,32,64,0.35) 50%, transparent 100%)",
+              }} />
             </div>
-            <button
-              onClick={onClose}
-              style={{
-                flexShrink: 0, marginLeft: 16, width: 36, height: 36, borderRadius: "50%",
-                border: "1px solid rgba(41,171,226,0.3)", background: "rgba(7,21,42,0.8)",
-                color: "#29ABE2", cursor: "pointer", fontSize: 20,
-                display: "flex", alignItems: "center", justifyContent: "center",
-              }}
-            >×</button>
-          </div>
-
-          {event.image && (
-            <div style={{ borderRadius: 16, overflow: "hidden", marginBottom: 20, maxHeight: 280 }}>
-              <img src={event.image} alt={event.title}
-                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+          ) : (
+            <div style={{
+              height: 180,
+              background: `linear-gradient(135deg, rgba(26,78,159,0.4) 0%, #07152a 60%, ${cfg.bg} 100%)`,
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <span style={{ fontSize: 56, opacity: 0.25 }}>{cfg.icon}</span>
             </div>
           )}
 
-          <p style={{ fontSize: 16, color: "#94a3b8", lineHeight: 1.75, margin: "0 0 20px" }}>
+          {/* Handle */}
+          <div style={{
+            position: "absolute", top: 12, left: 0, right: 0,
+            display: "flex", justifyContent: "center",
+          }}>
+            <div style={{ width: 40, height: 4, borderRadius: 99, background: "rgba(255,255,255,0.3)" }} />
+          </div>
+
+          {/* Botón cerrar */}
+          <button
+            onClick={onClose}
+            style={{
+              position: "absolute", top: 12, right: 14,
+              width: 34, height: 34, borderRadius: "50%",
+              border: "1px solid rgba(255,255,255,0.25)",
+              background: "rgba(7,21,42,0.7)",
+              color: "#fff", cursor: "pointer", fontSize: 20,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              backdropFilter: "blur(6px)",
+            }}
+          >×</button>
+
+          {/* Badge + título superpuestos en la parte inferior de la imagen */}
+          <div style={{
+            position: event.image ? "absolute" : "relative",
+            bottom: 0, left: 0, right: 0,
+            padding: "0 20px 20px",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+              <span style={{
+                padding: "3px 10px", borderRadius: 99, fontSize: 11, fontWeight: 700,
+                background: cfg.bg, color: cfg.color,
+                border: `1px solid ${cfg.color}55`,
+                backdropFilter: "blur(6px)",
+              }}>
+                {cfg.icon} {event.type}
+              </span>
+              <span style={{ fontSize: 11, color: "rgba(255,255,255,0.55)" }}>
+                {event.date}
+              </span>
+            </div>
+            <h3 style={{
+              fontSize: "clamp(18px,3vw,26px)", fontWeight: 900,
+              color: "#fff", margin: 0, lineHeight: 1.2,
+              textShadow: "0 2px 14px rgba(0,0,0,0.7)",
+            }}>
+              {event.title}
+            </h3>
+          </div>
+        </div>
+
+        {/* ══ SECCIÓN INFERIOR: descripción + highlights + carrusel ══ */}
+        <div style={{ padding: "20px 20px 40px" }}>
+
+          <p style={{ fontSize: 15, color: "#94a3b8", lineHeight: 1.75, margin: "0 0 16px" }}>
             {event.description}
           </p>
 
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 24 }}>
-            {event.highlights.map((h) => (
-              <span key={h} style={{
-                padding: "5px 14px", borderRadius: 99, fontSize: 13,
-                border: `1px solid ${cfg.color}44`, background: cfg.bg, color: cfg.color,
-              }}>{h}</span>
-            ))}
-          </div>
+      
 
           {event.media && event.media.length > 0 && (
-            <>
-              <p style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.15em", color: "#475569", marginBottom: 12 }}>
-                Evidencias
-              </p>
-              <div className="drawer-media-grid">
-                {event.media.map((m, i) => (
-                  <MediaThumb key={i} m={m} onOpenModal={setModalItem} />
-                ))}
-              </div>
-            </>
+            <MediaCarousel
+              media={event.media}
+              onOpenModal={setModalItem}
+              cfg={cfg}
+            />
           )}
         </div>
       </div>
     </>
-  );
-}
-
-// ─── MediaThumb ────────────────────────────────────────────────────
-function MediaThumb({ m, onOpenModal }) {
-  const base = {
-    height: 160, borderRadius: 14, overflow: "hidden",
-    border: m.src ? "1px solid rgba(41,171,226,0.2)" : "1px dashed rgba(41,171,226,0.15)",
-    background: "#07152a", display: "flex", alignItems: "center", justifyContent: "center",
-    position: "relative",
-  };
-
-  if (!m.src) return (
-    <div style={base}>
-      <p style={{ fontSize: 12, color: "#334155", textAlign: "center", padding: "0 16px" }}>
-        {m.caption}<br /><span style={{ fontSize: 10 }}>pendiente</span>
-      </p>
-    </div>
-  );
-
-  return (
-    <div style={{ ...base, cursor: "pointer" }} onClick={() => onOpenModal(m)}>
-      {m.type === "video" && (
-        <video src={m.src} muted playsInline
-          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.4, pointerEvents: "none" }} />
-      )}
-      {m.type === "youtube" && (() => {
-        let videoId = "";
-        try { const u = new URL(m.src); videoId = u.searchParams.get("v") || u.pathname.split("/").pop(); } catch { }
-        return <img src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`} alt={m.caption}
-          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.6 }} />;
-      })()}
-      {(m.type === "image" || m.type === "poster") && (
-        <img src={m.src} alt={m.caption}
-          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
-      )}
-
-      <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.35)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2 }}>
-        <div style={{ width: 44, height: 44, borderRadius: "50%", background: "rgba(41,171,226,0.25)", border: "2px solid #29ABE2", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <span style={{ color: "#29ABE2", fontSize: 18, marginLeft: m.type === "image" ? 0 : 3 }}>
-            {(m.type === "image" || m.type === "poster") ? "⤢" : "▶"}
-          </span>
-        </div>
-      </div>
-
-      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 3, background: "linear-gradient(to top,rgba(0,0,0,0.7),transparent)", padding: "8px 10px 6px" }}>
-        <p style={{ fontSize: 11, color: "#fff", margin: 0 }}>{m.caption}</p>
-      </div>
-    </div>
   );
 }
 
