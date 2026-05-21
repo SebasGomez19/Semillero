@@ -87,6 +87,11 @@ export default function ARModal({
         setLoadState("camera");
 
         async function init() {
+            // FIX A: esperar a que la animación del modal termine antes de medir
+            // En móvil la spring animation deja clientWidth=0 si medís de inmediato
+            await new Promise((r) => setTimeout(r, 350));
+            if (cancelled) return;
+
             // ── 1. CÁMARA ────────────────────────────────────────────────────
             let stream;
             try {
@@ -111,19 +116,21 @@ export default function ARModal({
                 await videoRef.current.play().catch(() => {});
             }
 
-            // FIX: evento real del video en vez de setTimeout(100)
+            // FIX B: en móvil "canplay" puede tardar mucho o no llegar; fallback generoso
             await new Promise((r) => {
                 if (!videoRef.current) return r();
                 if (videoRef.current.readyState >= 2) return r();
-                videoRef.current.addEventListener("canplay", r, { once: true });
-                setTimeout(r, 1500); // fallback
+                videoRef.current.addEventListener("canplay",  r, { once: true });
+                videoRef.current.addEventListener("playing",  r, { once: true }); // backup event
+                setTimeout(r, 4000); // fallback 4s para móviles lentos
             });
 
             if (cancelled || !mountRef.current) return;
 
             // ── 2. THREE.JS ──────────────────────────────────────────────────
-            const w = mountRef.current.clientWidth  || window.innerWidth;
-            const h = mountRef.current.clientHeight || window.innerHeight;
+            // FIX C: si clientWidth sigue en 0 (modal aún animando) usar window como fallback
+            const w = mountRef.current.clientWidth  > 0 ? mountRef.current.clientWidth  : window.innerWidth;
+            const h = mountRef.current.clientHeight > 0 ? mountRef.current.clientHeight : window.innerHeight;
 
             const scene = new THREE.Scene();
             sceneRef.current = scene;
@@ -274,12 +281,16 @@ export default function ARModal({
             }
             function onResize() {
                 if (!mountRef.current || !rendererRef.current) return;
-                const nw = mountRef.current.clientWidth;
-                const nh = mountRef.current.clientHeight;
+                const nw = mountRef.current.clientWidth  > 0 ? mountRef.current.clientWidth  : window.innerWidth;
+                const nh = mountRef.current.clientHeight > 0 ? mountRef.current.clientHeight : window.innerHeight;
                 camera.aspect = nw / nh;
                 camera.updateProjectionMatrix();
                 rendererRef.current.setSize(nw, nh);
             }
+
+            // FIX D: disparar resize manual luego de que la spring animation del modal
+            // termina (~400ms) por si las dimensiones quedaron en 0 al inicio
+            setTimeout(onResize, 450);
 
             el.addEventListener("touchstart", onTouchStart, { passive: false });
             el.addEventListener("touchmove",  onTouchMove,  { passive: false });

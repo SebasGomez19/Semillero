@@ -6,8 +6,15 @@ import WorkCarousel from "./components/WorkCarousel";
 import Header from "./components/Header";
 import { kpis } from "./data/portfolioData";
 import { SectionTitle, StatCard } from "./components/ui";
+import { useEffect } from "react";
+import { preloadARModel } from "./components/ARModal";
 
 export default function App() {
+
+  useEffect(() => {
+    preloadARModel();
+  }, []);
+
   return (
     <div className="min-h-screen overflow-hidden bg-slate-950 text-white selection:bg-cyan-300 selection:text-slate-950">
       <div className="pointer-events-none fixed inset-0 opacity-30">
