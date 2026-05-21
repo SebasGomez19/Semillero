@@ -383,10 +383,14 @@ export default function ARModal({
 
                         {/* Canvas Three.js */}
                         <div
-                            ref={mountRef}
-                            className="absolute inset-0 bottom-12"
-                            style={{ pointerEvents: "auto", cursor: loadState === "ready" ? "grab" : "default" }}
-                        />
+  ref={mountRef}
+  className="absolute inset-0 bottom-12"
+  style={{ 
+    pointerEvents: "auto", 
+    cursor: loadState === "ready" ? "grab" : "default",
+    position: "relative"  // ← agregar esto
+  }}
+/>
 
                         {/* ── OVERLAY DE CARGA ── */}
                         <AnimatePresence>
