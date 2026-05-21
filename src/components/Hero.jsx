@@ -1,13 +1,30 @@
 import logoDos from "../assets/logoDos.png";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Icons } from "./Icons";
 import { Badge, Button, Card, CardContent } from "./ui";
 import ARModal from "./ARModal";
+import { FBXLoader } from "three/addons/loaders/FBXLoader.js";
+import { modelCache } from "./ARModal"; // ← exportar el Map desde ARModal (ver abajo)
+
+const MODEL_URL = "/models/avatarJulis.fbx";
 
 export default function Hero() {
   const [scanActive, setScanActive] = useState(false);
-  const [arOpen, setArOpen] = useState(false); // ← 1. estado que faltaba
+  const [arOpen, setArOpen] = useState(false);
+
+  // Precarga silenciosa: descarga y cachea el modelo en cuanto Hero monta
+  useEffect(() => {
+    if (modelCache.has(MODEL_URL)) return; // ya cacheado, nada que hacer
+    const loader = new FBXLoader();
+    loader.setResourcePath("/models/");
+    loader.load(
+      MODEL_URL,
+      (object) => { modelCache.set(MODEL_URL, object); },
+      undefined,
+      (err) => console.warn("Precarga FBX falló:", err)
+    );
+  }, []);
 
   return (
     <section className="ar-grid relative mx-auto min-h-screen max-w-7xl overflow-hidden px-6 py-10 lg:py-16">
@@ -81,11 +98,10 @@ export default function Hero() {
         </Card>
       </div>
 
-      {/* 2. ARModal fuera del Card, al final del section */}
       <ARModal
         isOpen={arOpen}
         onClose={() => setArOpen(false)}
-        modelUrl="/models/avatarJulis.fbx"
+        modelUrl={MODEL_URL}
       />
     </section>
   );
