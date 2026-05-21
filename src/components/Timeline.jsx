@@ -14,16 +14,40 @@ const typeConfig = {
   "Producto": { color: "#F7931E", bg: "rgba(247,147,30,0.12)", icon: "📱" },
 };
 
-// ─── Colores por categoría (encabezado de tarjeta) ─────────────────
+// ─── Colores + imagen por categoría ───────────────────────────────
 const categoryConfig = {
-  "Póster": { color: "#29ABE2", bg: "rgba(41,171,226,0.12)", icon: "🖼️", label: "Póster" },
-  "Capacitaciones": { color: "#39B54A", bg: "rgba(57,181,74,0.12)", icon: "🎓", label: "Capacitaciones" },
-  "Participaciones / Ponencias": { color: "#F7931E", bg: "rgba(247,147,30,0.12)", icon: "🎤", label: "Participaciones / Ponencias" },
-  "Investigaciones": { color: "#BE63F9", bg: "rgba(190,99,249,0.12)", icon: "🔬", label: "Investigaciones" },
-  "Codirección": { color: "#F9A63A", bg: "rgba(249,166,58,0.12)", icon: "📋", label: "Codirección" },
-  "Talleres": { color: "#FF6B6B", bg: "rgba(255,107,107,0.12)", icon: "🛠️", label: "Talleres" },
-  "Participaciones": { color: "#4ECDC4", bg: "rgba(78,205,196,0.12)", icon: "🙋", label: "Participaciones" },
-  "Productos": { color: "#F7931E", bg: "rgba(247,147,30,0.12)", icon: "📱", label: "Productos" },
+  "Póster": {
+    color: "#39B54A", bg: "rgba(57,181,74,0.12)", label: "Capacitaciones",
+    image: "/images/logoDos.png",
+  },
+  "Capacitaciones": {
+    color: "#39B54A", bg: "rgba(57,181,74,0.12)", label: "Capacitaciones",
+    image: "/images/logoDos.png",
+  },
+  "Participaciones / Ponencias": {
+    color: "#F7931E", bg: "rgba(247,147,30,0.12)",label: "Participaciones / Ponencias",
+    image: "/images/logoDos.png",
+  },
+  "Investigaciones": {
+    color: "#BE63F9", bg: "rgba(190,99,249,0.12)", label: "Investigaciones",
+    image: "/images/categorias/investigaciones.jpg",
+  },
+  "Codirección": {
+    color: "#F9A63A", bg: "rgba(249,166,58,0.12)", label: "Codirección",
+    image: "/images/categorias/codireccion.jpg",
+  },
+  "Talleres": {
+    color: "#FF6B6B", bg: "rgba(255,107,107,0.12)", label: "Talleres",
+    image: "/images/categorias/talleres.jpg",
+  },
+  "Participaciones": {
+    color: "#4ECDC4", bg: "rgba(78,205,196,0.12)" ,label: "Participaciones",
+    image: "/images/categorias/participaciones.jpg",
+  },
+  "Productos": {
+    color: "#F7931E", bg: "rgba(247,147,30,0.12)", label: "Productos",
+    image: "/images/categorias/productos.jpg",
+  },
 };
 
 // ─── Hook de animación por scroll ─────────────────────────────────
@@ -156,7 +180,6 @@ function MediaCarousel({ media, onOpenModal, cfg }) {
         Evidencias
       </p>
 
-      {/* ── Slide principal ── */}
       <div style={{
         position: "relative",
         borderRadius: 16,
@@ -164,12 +187,10 @@ function MediaCarousel({ media, onOpenModal, cfg }) {
         background: "#07152a",
         border: `1px solid ${cfg.color}33`,
       }}>
-        {/* Zona clickeable */}
         <div
           onClick={() => m && m.src && onOpenModal(m)}
           style={{ cursor: m && m.src ? "pointer" : "default" }}
         >
-          {/* Sin src */}
           {(!m || !m.src) && (
             <div style={{
               height: 200, display: "flex", flexDirection: "column",
@@ -183,21 +204,14 @@ function MediaCarousel({ media, onOpenModal, cfg }) {
             </div>
           )}
 
-          {/* Imagen / Póster: tamaño natural, sin recorte */}
           {isImage && (
             <img
               src={m.src}
               alt={m.caption}
-              style={{
-                display: "block",
-                width: "100%",
-                height: "auto",        // respeta proporción original
-                objectFit: "unset",    // sin recorte
-              }}
+              style={{ display: "block", width: "100%", height: "auto", objectFit: "unset" }}
             />
           )}
 
-          {/* Video local */}
           {m && m.src && m.type === "video" && (
             <div style={{ position: "relative", height: 240 }}>
               <video
@@ -213,7 +227,6 @@ function MediaCarousel({ media, onOpenModal, cfg }) {
             </div>
           )}
 
-          {/* YouTube */}
           {m && m.src && m.type === "youtube" && (() => {
             const thumb = getThumbnail(m);
             return (
@@ -233,7 +246,6 @@ function MediaCarousel({ media, onOpenModal, cfg }) {
             );
           })()}
 
-          {/* Google Drive */}
           {m && m.src && m.type === "drive" && (
             <div style={{
               height: 240, display: "flex",
@@ -244,7 +256,6 @@ function MediaCarousel({ media, onOpenModal, cfg }) {
             </div>
           )}
 
-          {/* Caption superpuesto */}
           {m && m.caption && m.src && (
             <div style={{
               background: "linear-gradient(to top, rgba(7,21,42,0.9) 0%, transparent 100%)",
@@ -255,7 +266,6 @@ function MediaCarousel({ media, onOpenModal, cfg }) {
           )}
         </div>
 
-        {/* Flechas */}
         {total > 1 && (
           <>
             <button onClick={prev} style={arrowStyle("left", cfg.color)}>‹</button>
@@ -263,7 +273,6 @@ function MediaCarousel({ media, onOpenModal, cfg }) {
           </>
         )}
 
-        {/* Contador */}
         {total > 1 && (
           <div style={{
             position: "absolute", top: 10, right: 10,
@@ -276,7 +285,6 @@ function MediaCarousel({ media, onOpenModal, cfg }) {
         )}
       </div>
 
-      {/* ── Puntos ── */}
       {total > 1 && (
         <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 10 }}>
           {media.map((_, i) => (
@@ -298,7 +306,6 @@ function MediaCarousel({ media, onOpenModal, cfg }) {
         </div>
       )}
 
-      {/* ── Miniaturas ── */}
       {total > 1 && (
         <div style={{
           display: "flex", gap: 8, marginTop: 12,
@@ -436,9 +443,7 @@ function Drawer({ event, onClose }) {
           }
         `}</style>
 
-        {/* ══ SECCIÓN SUPERIOR: imagen representativa ══ */}
         <div style={{ position: "relative" }}>
-
           {event.image ? (
             <div style={{ position: "relative" }}>
               <img
@@ -446,7 +451,6 @@ function Drawer({ event, onClose }) {
                 alt={event.title}
                 style={{ width: "100%", height: "auto", display: "block" }}
               />
-              {/* Gradiente para legibilidad del texto */}
               <div style={{
                 position: "absolute", inset: 0,
                 background: "linear-gradient(to top, #0d2040 0%, rgba(13,32,64,0.35) 50%, transparent 100%)",
@@ -462,7 +466,6 @@ function Drawer({ event, onClose }) {
             </div>
           )}
 
-          {/* Handle */}
           <div style={{
             position: "absolute", top: 12, left: 0, right: 0,
             display: "flex", justifyContent: "center",
@@ -470,7 +473,6 @@ function Drawer({ event, onClose }) {
             <div style={{ width: 40, height: 4, borderRadius: 99, background: "rgba(255,255,255,0.3)" }} />
           </div>
 
-          {/* Botón cerrar */}
           <button
             onClick={onClose}
             style={{
@@ -484,7 +486,6 @@ function Drawer({ event, onClose }) {
             }}
           >×</button>
 
-          {/* Badge + título superpuestos en la parte inferior de la imagen */}
           <div style={{
             position: event.image ? "absolute" : "relative",
             bottom: 0, left: 0, right: 0,
@@ -513,14 +514,10 @@ function Drawer({ event, onClose }) {
           </div>
         </div>
 
-        {/* ══ SECCIÓN INFERIOR: descripción + highlights + carrusel ══ */}
         <div style={{ padding: "20px 20px 40px" }}>
-
           <p style={{ fontSize: 15, color: "#94a3b8", lineHeight: 1.75, margin: "0 0 16px" }}>
             {event.description}
           </p>
-
-      
 
           {event.media && event.media.length > 0 && (
             <MediaCarousel
@@ -539,7 +536,8 @@ function Drawer({ event, onClose }) {
 function CategoryCard({ categoryName, events, index, onEventClick }) {
   const [ref, inView] = useInView();
   const cfg = categoryConfig[categoryName] || {
-    color: "#29ABE2", bg: "rgba(41,171,226,0.12)", icon: "📌", label: categoryName,
+    color: "#29ABE2", bg: "rgba(41,171,226,0.12)", icon: "📁", label: categoryName,
+    image: null,
   };
 
   return (
@@ -566,17 +564,43 @@ function CategoryCard({ categoryName, events, index, onEventClick }) {
         className={`cat-card-${index}`}
         style={{ display: "grid", gridTemplateColumns: "1fr", gap: 24, padding: 24 }}
       >
-        {/* Visual de la categoría */}
+        {/* ── Visual de la categoría ── */}
         <div style={{
           position: "relative", minHeight: 220, borderRadius: 20,
           border: "1px solid rgba(255,255,255,0.07)",
-          background: "linear-gradient(135deg, rgba(26,78,159,0.4) 0%, #07152a 50%, rgba(41,171,226,0.1) 100%)",
           overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center",
+          background: !cfg.image
+            ? "linear-gradient(135deg, rgba(26,78,159,0.4) 0%, #07152a 50%, rgba(41,171,226,0.1) 100%)"
+            : "#07152a",
         }}>
+          {/* Imagen de fondo */}
+          {cfg.image && (
+            <img
+              src={cfg.image}
+              alt={categoryName}
+              style={{
+                position: "absolute", inset: 0,
+                width: "100%", height: "100%",
+                objectFit: "cover", opacity: 0.45,
+              }}
+            />
+          )}
+
+          {/* Overlay oscuro para legibilidad */}
+          {cfg.image && (
+            <div style={{
+              position: "absolute", inset: 0,
+              background: "linear-gradient(to top, rgba(7,21,42,0.85) 0%, rgba(7,21,42,0.1) 100%)",
+            }} />
+          )}
+
+          {/* Badge central */}
           <div style={{
+            position: "relative", zIndex: 1,
             borderRadius: 20, border: `1px solid ${cfg.color}33`,
-            background: cfg.bg, padding: "32px 44px",
-            textAlign: "center", backdropFilter: "blur(8px)",
+            background: cfg.image ? "rgba(7,21,42,0.55)" : cfg.bg,
+            padding: "32px 44px",
+            textAlign: "center", backdropFilter: "blur(3px)",
           }}>
             <p style={{ fontSize: 64, margin: 0, lineHeight: 1 }}>{cfg.icon}</p>
             <p style={{ fontSize: 20, fontWeight: 900, color: cfg.color, margin: "12px 0 0", lineHeight: 1.2 }}>
@@ -588,7 +612,7 @@ function CategoryCard({ categoryName, events, index, onEventClick }) {
           </div>
         </div>
 
-        {/* Lista de eventos */}
+        {/* ── Lista de eventos ── */}
         <div>
           <span style={{
             display: "inline-block", padding: "4px 14px", borderRadius: 99, fontSize: 12, fontWeight: 600,

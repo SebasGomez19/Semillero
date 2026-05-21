@@ -88,7 +88,7 @@ export const eventsByCategory = {
       description: "Presentación de póster en el evento CyberTech Women 2024.",
      
       image: null, media: [
-        { type: "image", src: null, caption: "Póster CyberTech Women 2024" },
+        { type: "youtube", src: "https://youtu.be/756tzAlCJrM", caption: "Póster CyberTech Women 2024" },
       ],
     },
     {
