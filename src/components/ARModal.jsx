@@ -3,8 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import * as THREE from "three";
 import { FBXLoader } from "three/addons/loaders/FBXLoader.js";
 
-// Caché de modelos fuera del componente — persiste entre renders y reaperturas
-export const modelCache = new Map();
+// Caché del ArrayBuffer crudo — sin clone(), sin problemas de skeleton/animaciones
+export const modelCache = new Map(); // { url -> ArrayBuffer }
 
 export default function ARModal({ isOpen, onClose, modelUrl = "/models/avatarJulis.fbx" }) {
     const mountRef = useRef(null);
@@ -15,9 +15,9 @@ export default function ARModal({ isOpen, onClose, modelUrl = "/models/avatarJul
     const sceneRef = useRef(null);
     const mixerRef = useRef(null);
     const clockRef = useRef(null);
-    const zoomRef = useRef(1); // zoom actual
-    const rotRef = useRef(0); // rotación Y acumulada
-    const dragRef = useRef(null); // estado de arrastre
+    const zoomRef = useRef(1);
+    const rotRef = useRef(0);
+    const dragRef = useRef(null);
 
     const cleanup = useCallback(() => {
         cancelAnimationFrame(animFrameRef.current);
@@ -42,10 +42,11 @@ export default function ARModal({ isOpen, onClose, modelUrl = "/models/avatarJul
         let cancelled = false;
 
         async function init() {
+            // ── Cámara ───────────────────────────────────────────────────
             let stream;
             try {
                 stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: "environment", width: { ideal: 1600}, height: { ideal: 1000 } },
+                    video: { facingMode: "environment", width: { ideal: 1600 }, height: { ideal: 1000 } },
                     audio: false,
                 });
             } catch {
@@ -56,18 +57,17 @@ export default function ARModal({ isOpen, onClose, modelUrl = "/models/avatarJul
                     return;
                 }
             }
-
             if (cancelled) { stream.getTracks().forEach((t) => t.stop()); return; }
             streamRef.current = stream;
-
             if (videoRef.current) {
                 videoRef.current.srcObject = stream;
-                await videoRef.current.play().catch(() => { });
+                await videoRef.current.play().catch(() => {});
             }
 
             await new Promise((r) => setTimeout(r, 100));
             if (cancelled || !mountRef.current) return;
 
+            // ── Three.js ─────────────────────────────────────────────────
             const w = mountRef.current.clientWidth || window.innerWidth;
             const h = mountRef.current.clientHeight || window.innerHeight;
 
@@ -100,35 +100,27 @@ export default function ARModal({ isOpen, onClose, modelUrl = "/models/avatarJul
             back.position.set(0, 0, -10);
             scene.add(back);
 
-            // ── CARGA CON CACHÉ ──────────────────────────────────────────
-            function addObjectToScene(source) {
-                // Clonamos para que cada apertura tenga su propia instancia
-                const object = source.clone(true);
+            // ── Carga FBX con caché de ArrayBuffer ───────────────────────
+            // parse() desde buffer: objeto Three.js fresco cada vez,
+            // skeleton y animaciones intactos, cero peticiones HTTP extra.
+            function mountObject(arrayBuffer) {
+                if (cancelled) return;
+                const loader = new FBXLoader();
+                loader.setResourcePath("/models/");
+                const object = loader.parse(arrayBuffer, "/models/");
 
-                // clone() no copia las animaciones — las copiamos manualmente
-                object.animations = source.animations;
-
-                // Escalar y centrar
                 const box = new THREE.Box3().setFromObject(object);
                 const size = box.getSize(new THREE.Vector3());
                 const maxDim = Math.max(size.x, size.y, size.z);
-                const scale = 150 / maxDim;
-                object.scale.setScalar(scale);
+                object.scale.setScalar(150 / maxDim);
                 const box2 = new THREE.Box3().setFromObject(object);
                 const center = box2.getCenter(new THREE.Vector3());
                 object.position.set(-center.x, -center.y - 30, -center.z);
 
-                // Ocultar objetos esféricos
                 object.traverse((child) => {
                     if (child.isMesh) {
                         const name = child.name.toLowerCase();
-                        if (
-                            name.includes("sphere") ||
-                            name.includes("geo") ||
-                            name.includes("esfera") ||
-                            name.includes("ball") ||
-                            name.includes("globe")
-                        ) {
+                        if (["sphere","geo","esfera","ball","globe"].some((k) => name.includes(k))) {
                             child.visible = false;
                         }
                     }
@@ -139,12 +131,8 @@ export default function ARModal({ isOpen, onClose, modelUrl = "/models/avatarJul
                 if (object.animations?.length) {
                     const mixer = new THREE.AnimationMixer(object);
                     mixerRef.current = mixer;
-
-                    // Define el orden de animaciones que quieres
-                    const sequence = [1, 2]; // índices: "saludar|baile", "saludar|dances", "hello"
-
+                    const sequence = [1, 2];
                     let current = 0;
-
                     function playNext() {
                         mixer.stopAllAction();
                         const action = mixer.clipAction(object.animations[sequence[current]]);
@@ -154,54 +142,47 @@ export default function ARModal({ isOpen, onClose, modelUrl = "/models/avatarJul
                         action.play();
                         current = (current + 1) % sequence.length;
                     }
-
                     mixer.addEventListener("finished", playNext);
-                    playNext(); // arranca la primera
+                    playNext();
                 }
             }
 
             if (modelCache.has(modelUrl)) {
-                // Modelo ya cargado anteriormente: uso instantáneo sin red
-                addObjectToScene(modelCache.get(modelUrl));
+                // Buffer ya descargado: parsear desde memoria, sin red
+                mountObject(modelCache.get(modelUrl));
             } else {
-                // Primera apertura: descargamos y guardamos en caché
-                const loader = new FBXLoader();
-                loader.setResourcePath("/models/");
-                loader.load(
-                    modelUrl,
-                    (object) => {
+                // Primera apertura: fetch manual para guardar el ArrayBuffer
+                fetch(modelUrl)
+                    .then((res) => res.arrayBuffer())
+                    .then((buffer) => {
                         if (cancelled) return;
-                        modelCache.set(modelUrl, object); // guardar original en caché
-                        addObjectToScene(object);
-                    },
-                    undefined,
-                    (err) => console.error("Error cargando FBX:", err)
-                );
+                        modelCache.set(modelUrl, buffer);
+                        mountObject(buffer);
+                    })
+                    .catch((err) => console.error("Error cargando FBX:", err));
             }
             // ─────────────────────────────────────────────────────────────
 
+            // ── Loop de animación ────────────────────────────────────────
             const clock = new THREE.Clock();
             clockRef.current = clock;
 
             function animate() {
                 animFrameRef.current = requestAnimationFrame(animate);
-                const delta = clock.getDelta();
-                mixerRef.current?.update(delta);
+                mixerRef.current?.update(clock.getDelta());
                 scene.rotation.y = rotRef.current;
                 scene.position.y = Math.sin(Date.now() * 0.0015) * 3;
                 scene.scale.setScalar(zoomRef.current);
                 renderer.render(scene, camera);
             }
             animate();
-            const el = mountRef.current;
 
-            // ── TOUCH ────────────────────────────────
+            // ── Eventos de interacción ───────────────────────────────────
+            const el = mountRef.current;
             let lastDist = null;
 
             function onTouchStart(e) {
-                if (e.touches.length === 1) {
-                    dragRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-                }
+                if (e.touches.length === 1) dragRef.current = { x: e.touches[0].clientX };
                 if (e.touches.length === 2) {
                     const dx = e.touches[0].clientX - e.touches[1].clientX;
                     const dy = e.touches[0].clientY - e.touches[1].clientY;
@@ -211,9 +192,8 @@ export default function ARModal({ isOpen, onClose, modelUrl = "/models/avatarJul
             function onTouchMove(e) {
                 e.preventDefault();
                 if (e.touches.length === 1 && dragRef.current) {
-                    const dx = e.touches[0].clientX - dragRef.current.x;
-                    rotRef.current += dx * 0.01;
-                    dragRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+                    rotRef.current += (e.touches[0].clientX - dragRef.current.x) * 0.01;
+                    dragRef.current = { x: e.touches[0].clientX };
                 }
                 if (e.touches.length === 2 && lastDist !== null) {
                     const dx = e.touches[0].clientX - e.touches[1].clientX;
@@ -223,14 +203,8 @@ export default function ARModal({ isOpen, onClose, modelUrl = "/models/avatarJul
                     lastDist = dist;
                 }
             }
-            function onTouchEnd() {
-                dragRef.current = null;
-                lastDist = null;
-            }
-            // ── MOUSE (desktop) ──────────────────────
-            function onMouseDown(e) {
-                dragRef.current = { x: e.clientX };
-            }
+            function onTouchEnd() { dragRef.current = null; lastDist = null; }
+            function onMouseDown(e) { dragRef.current = { x: e.clientX }; }
             function onMouseMove(e) {
                 if (!dragRef.current) return;
                 rotRef.current += (e.clientX - dragRef.current.x) * 0.01;
@@ -241,37 +215,40 @@ export default function ARModal({ isOpen, onClose, modelUrl = "/models/avatarJul
                 e.preventDefault();
                 zoomRef.current = Math.min(3, Math.max(0.3, zoomRef.current - e.deltaY * 0.001));
             }
-            el.addEventListener("touchstart", onTouchStart, { passive: false });
-            el.addEventListener("touchmove", onTouchMove, { passive: false });
-            el.addEventListener("touchend", onTouchEnd);
-            el.addEventListener("mousedown", onMouseDown);
-            window.addEventListener("mousemove", onMouseMove);
-            window.addEventListener("mouseup", onMouseUp);
-            el.addEventListener("wheel", onWheel, { passive: false });
-            return () => {
-                el.removeEventListener("touchstart", onTouchStart);
-                el.removeEventListener("touchmove", onTouchMove);
-                el.removeEventListener("touchend", onTouchEnd);
-                el.removeEventListener("mousedown", onMouseDown);
-                window.removeEventListener("mousemove", onMouseMove);
-                window.removeEventListener("mouseup", onMouseUp);
-                el.removeEventListener("wheel", onWheel);
-            }
-
-            const onResize = () => {
+            function onResize() {
                 if (!mountRef.current || !rendererRef.current) return;
                 const nw = mountRef.current.clientWidth;
                 const nh = mountRef.current.clientHeight;
                 camera.aspect = nw / nh;
                 camera.updateProjectionMatrix();
                 rendererRef.current.setSize(nw, nh);
+            }
+
+            el.addEventListener("touchstart", onTouchStart, { passive: false });
+            el.addEventListener("touchmove",  onTouchMove,  { passive: false });
+            el.addEventListener("touchend",   onTouchEnd);
+            el.addEventListener("mousedown",  onMouseDown);
+            el.addEventListener("wheel",      onWheel, { passive: false });
+            window.addEventListener("mousemove", onMouseMove);
+            window.addEventListener("mouseup",   onMouseUp);
+            window.addEventListener("resize",    onResize);
+
+            // Retorno de limpieza de eventos (único return en init)
+            return () => {
+                el.removeEventListener("touchstart", onTouchStart);
+                el.removeEventListener("touchmove",  onTouchMove);
+                el.removeEventListener("touchend",   onTouchEnd);
+                el.removeEventListener("mousedown",  onMouseDown);
+                el.removeEventListener("wheel",      onWheel);
+                window.removeEventListener("mousemove", onMouseMove);
+                window.removeEventListener("mouseup",   onMouseUp);
+                window.removeEventListener("resize",    onResize);
             };
-            window.addEventListener("resize", onResize);
-            return () => window.removeEventListener("resize", onResize);
         }
 
-        init();
-        return () => { cancelled = true; cleanup(); };
+        let cleanupEvents = () => {};
+        init().then((fn) => { if (fn) cleanupEvents = fn; });
+        return () => { cancelled = true; cleanupEvents(); cleanup(); };
     }, [isOpen, modelUrl, cleanup]);
 
     return (
@@ -293,13 +270,10 @@ export default function ARModal({ isOpen, onClose, modelUrl = "/models/avatarJul
                         className="relative w-full max-w-2xl h-full overflow-hidden rounded-[2rem] border border-cyan-300/30 bg-black shadow-[0_0_80px_rgba(34,211,238,.25)]"
                         style={{ aspectRatio: "16/9", maxHeight: "150vh", width: "95vw" }}
                     >
-                        {/* Feed de cámara */}
                         <video
                             ref={videoRef}
                             className="absolute inset-0 h-full w-full object-cover"
-                            playsInline
-                            muted
-                            autoPlay
+                            playsInline muted autoPlay
                         />
 
                         {/* Grid HUD */}
@@ -313,10 +287,10 @@ export default function ARModal({ isOpen, onClose, modelUrl = "/models/avatarJul
 
                         {/* Esquinas HUD */}
                         {[
-                            { pos: "top-4 left-4", s: { borderTop: "2px solid rgba(34,211,238,0.8)", borderLeft: "2px solid rgba(34,211,238,0.8)" } },
-                            { pos: "top-4 right-4", s: { borderTop: "2px solid rgba(34,211,238,0.8)", borderRight: "2px solid rgba(34,211,238,0.8)" } },
-                            { pos: "bottom-4 left-4", s: { borderBottom: "2px solid rgba(34,211,238,0.8)", borderLeft: "2px solid rgba(34,211,238,0.8)" } },
-                            { pos: "bottom-4 right-4", s: { borderBottom: "2px solid rgba(34,211,238,0.8)", borderRight: "2px solid rgba(34,211,238,0.8)" } },
+                            { pos: "top-4 left-4",    s: { borderTop:    "2px solid rgba(34,211,238,0.8)", borderLeft:  "2px solid rgba(34,211,238,0.8)" } },
+                            { pos: "top-4 right-4",   s: { borderTop:    "2px solid rgba(34,211,238,0.8)", borderRight: "2px solid rgba(34,211,238,0.8)" } },
+                            { pos: "bottom-4 left-4", s: { borderBottom: "2px solid rgba(34,211,238,0.8)", borderLeft:  "2px solid rgba(34,211,238,0.8)" } },
+                            { pos: "bottom-4 right-4",s: { borderBottom: "2px solid rgba(34,211,238,0.8)", borderRight: "2px solid rgba(34,211,238,0.8)" } },
                         ].map(({ pos, s }, i) => (
                             <div key={i} className={`pointer-events-none absolute ${pos} h-6 w-6`} style={s} />
                         ))}
