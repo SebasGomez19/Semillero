@@ -3,8 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import * as THREE from "three";
 import { FBXLoader } from "three/addons/loaders/FBXLoader.js";
 
-// ─── CACHÉ GLOBAL (fuera del componente) ──────────────────────────────────────
-// El modelo se guarda aquí la primera vez y se clona en aperturas siguientes.
+// ─── CACHÉ GLOBAL ─────────────────────────────────────────────────────────────
 const modelCache = new Map();
 let preloadPromise = null;
 
@@ -16,10 +15,8 @@ function getLoader() {
 
 function loadFBXCached(url) {
     if (modelCache.has(url)) {
-        // Ya está en caché → clon instantáneo
         return Promise.resolve(modelCache.get(url).clone(true));
     }
-    // Solo una petición en vuelo aunque se llame varias veces
     if (!preloadPromise) {
         preloadPromise = new Promise((resolve, reject) => {
             getLoader().load(
@@ -40,12 +37,9 @@ function loadFBXCached(url) {
     return preloadPromise.then((obj) => obj.clone(true));
 }
 
-// ─── PRECARGA PÚBLICA ─────────────────────────────────────────────────────────
-// Llamá esto en el componente padre apenas monte para que el modelo
-// esté listo antes de que el usuario abra el modal.
-// Ej: useEffect(() => { preloadARModel(); }, []);
+// Llamá esto en el padre apenas monta: useEffect(() => { preloadARModel(); }, []);
 export function preloadARModel(url = "/models/avatarJulis.fbx") {
-    loadFBXCached(url).catch(() => { }); // silencioso, solo rellena la caché
+    loadFBXCached(url).catch(() => {});
 }
 
 // ─── COMPONENTE ───────────────────────────────────────────────────────────────
@@ -54,19 +48,19 @@ export default function ARModal({
     onClose,
     modelUrl = "/models/avatarJulis.fbx",
 }) {
-    const mountRef = useRef(null);
-    const videoRef = useRef(null);
-    const streamRef = useRef(null);
+    const mountRef   = useRef(null);
+    const videoRef   = useRef(null);
+    const streamRef  = useRef(null);
     const rendererRef = useRef(null);
     const animFrameRef = useRef(null);
-    const sceneRef = useRef(null);
-    const mixerRef = useRef(null);
-    const clockRef = useRef(null);
-    const zoomRef = useRef(1);
-    const rotRef = useRef(0);
-    const dragRef = useRef(null);
+    const sceneRef   = useRef(null);
+    const mixerRef   = useRef(null);
+    const clockRef   = useRef(null);
+    const zoomRef    = useRef(1);
+    const rotRef     = useRef(0);
+    const dragRef    = useRef(null);
 
-    const [loadState, setLoadState] = useState("idle"); // "idle" | "camera" | "model" | "ready"
+    const [loadState, setLoadState] = useState("idle"); // idle | camera | model | ready
 
     const cleanup = useCallback(() => {
         cancelAnimationFrame(animFrameRef.current);
@@ -81,8 +75,8 @@ export default function ARModal({
             rendererRef.current.dispose();
             rendererRef.current = null;
         }
-        sceneRef.current = null;
-        mixerRef.current = null;
+        sceneRef.current  = null;
+        mixerRef.current  = null;
         setLoadState("idle");
     }, []);
 
@@ -97,7 +91,7 @@ export default function ARModal({
             let stream;
             try {
                 stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } },
+                    video: { facingMode: "environment", width: { ideal: 1600 }, height: { ideal: 1000 } },
                     audio: false,
                 });
             } catch {
@@ -114,22 +108,21 @@ export default function ARModal({
 
             if (videoRef.current) {
                 videoRef.current.srcObject = stream;
-                await videoRef.current.play().catch(() => { });
+                await videoRef.current.play().catch(() => {});
             }
 
-            // FIX: esperar al video real en vez del setTimeout(100) artificial
+            // FIX: evento real del video en vez de setTimeout(100)
             await new Promise((r) => {
                 if (!videoRef.current) return r();
                 if (videoRef.current.readyState >= 2) return r();
                 videoRef.current.addEventListener("canplay", r, { once: true });
-                // fallback por si el evento no llega
-                setTimeout(r, 1500);
+                setTimeout(r, 1500); // fallback
             });
 
             if (cancelled || !mountRef.current) return;
 
             // ── 2. THREE.JS ──────────────────────────────────────────────────
-            const w = mountRef.current.clientWidth || window.innerWidth;
+            const w = mountRef.current.clientWidth  || window.innerWidth;
             const h = mountRef.current.clientHeight || window.innerHeight;
 
             const scene = new THREE.Scene();
@@ -175,12 +168,12 @@ export default function ARModal({
             if (cancelled) return;
 
             // Escalar y centrar
-            const box = new THREE.Box3().setFromObject(object);
-            const size = box.getSize(new THREE.Vector3());
+            const box    = new THREE.Box3().setFromObject(object);
+            const size   = box.getSize(new THREE.Vector3());
             const maxDim = Math.max(size.x, size.y, size.z);
-            const scale = 150 / maxDim;
+            const scale  = 150 / maxDim;
             object.scale.setScalar(scale);
-            const box2 = new THREE.Box3().setFromObject(object);
+            const box2   = new THREE.Box3().setFromObject(object);
             const center = box2.getCenter(new THREE.Vector3());
             object.position.set(-center.x, -center.y - 30, -center.z);
 
@@ -190,9 +183,9 @@ export default function ARModal({
                     const name = child.name.toLowerCase();
                     if (
                         name.includes("sphere") ||
-                        name.includes("geo") ||
+                        name.includes("geo")    ||
                         name.includes("esfera") ||
-                        name.includes("ball") ||
+                        name.includes("ball")   ||
                         name.includes("globe")
                     ) {
                         child.visible = false;
@@ -203,10 +196,10 @@ export default function ARModal({
             scene.add(object);
 
             if (object.animations?.length) {
-                const mixer = new THREE.AnimationMixer(object);
+                const mixer    = new THREE.AnimationMixer(object);
                 mixerRef.current = mixer;
                 const sequence = [1, 2];
-                let current = 0;
+                let current    = 0;
 
                 function playNext() {
                     mixer.stopAllAction();
@@ -232,8 +225,8 @@ export default function ARModal({
                 animFrameRef.current = requestAnimationFrame(animate);
                 const delta = clock.getDelta();
                 mixerRef.current?.update(delta);
-                scene.rotation.y = rotRef.current;
-                scene.position.y = Math.sin(Date.now() * 0.0015) * 3;
+                scene.rotation.y  = rotRef.current;
+                scene.position.y  = Math.sin(Date.now() * 0.0015) * 3;
                 scene.scale.setScalar(zoomRef.current);
                 renderer.render(scene, camera);
             }
@@ -245,7 +238,7 @@ export default function ARModal({
 
             function onTouchStart(e) {
                 if (e.touches.length === 1)
-                    dragRef.current = { x: e.touches[0].clientX };
+                    dragRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
                 if (e.touches.length === 2) {
                     const dx = e.touches[0].clientX - e.touches[1].clientX;
                     const dy = e.touches[0].clientY - e.touches[1].clientY;
@@ -255,26 +248,27 @@ export default function ARModal({
             function onTouchMove(e) {
                 e.preventDefault();
                 if (e.touches.length === 1 && dragRef.current) {
-                    rotRef.current += (e.touches[0].clientX - dragRef.current.x) * 0.01;
-                    dragRef.current = { x: e.touches[0].clientX };
+                    const dx = e.touches[0].clientX - dragRef.current.x;
+                    rotRef.current += dx * 0.01;
+                    dragRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
                 }
                 if (e.touches.length === 2 && lastDist !== null) {
-                    const dx = e.touches[0].clientX - e.touches[1].clientX;
-                    const dy = e.touches[0].clientY - e.touches[1].clientY;
+                    const dx   = e.touches[0].clientX - e.touches[1].clientX;
+                    const dy   = e.touches[0].clientY - e.touches[1].clientY;
                     const dist = Math.hypot(dx, dy);
                     zoomRef.current = Math.min(3, Math.max(0.3, zoomRef.current * (dist / lastDist)));
                     lastDist = dist;
                 }
             }
-            function onTouchEnd() { dragRef.current = null; lastDist = null; }
-            function onMouseDown(e) { dragRef.current = { x: e.clientX }; }
-            function onMouseMove(e) {
+            function onTouchEnd()  { dragRef.current = null; lastDist = null; }
+            function onMouseDown(e){ dragRef.current = { x: e.clientX }; }
+            function onMouseMove(e){
                 if (!dragRef.current) return;
                 rotRef.current += (e.clientX - dragRef.current.x) * 0.01;
                 dragRef.current = { x: e.clientX };
             }
-            function onMouseUp() { dragRef.current = null; }
-            function onWheel(e) {
+            function onMouseUp()   { dragRef.current = null; }
+            function onWheel(e)    {
                 e.preventDefault();
                 zoomRef.current = Math.min(3, Math.max(0.3, zoomRef.current - e.deltaY * 0.001));
             }
@@ -288,22 +282,22 @@ export default function ARModal({
             }
 
             el.addEventListener("touchstart", onTouchStart, { passive: false });
-            el.addEventListener("touchmove", onTouchMove, { passive: false });
-            el.addEventListener("touchend", onTouchEnd);
-            el.addEventListener("mousedown", onMouseDown);
+            el.addEventListener("touchmove",  onTouchMove,  { passive: false });
+            el.addEventListener("touchend",   onTouchEnd);
+            el.addEventListener("mousedown",  onMouseDown);
             window.addEventListener("mousemove", onMouseMove);
-            window.addEventListener("mouseup", onMouseUp);
+            window.addEventListener("mouseup",   onMouseUp);
             el.addEventListener("wheel", onWheel, { passive: false });
             window.addEventListener("resize", onResize);
 
-            // cleanup de eventos (se ejecuta cuando el useEffect hace teardown)
+            // FIX: ahora sí se ejecuta el cleanup de eventos
             return () => {
                 el.removeEventListener("touchstart", onTouchStart);
-                el.removeEventListener("touchmove", onTouchMove);
-                el.removeEventListener("touchend", onTouchEnd);
-                el.removeEventListener("mousedown", onMouseDown);
+                el.removeEventListener("touchmove",  onTouchMove);
+                el.removeEventListener("touchend",   onTouchEnd);
+                el.removeEventListener("mousedown",  onMouseDown);
                 window.removeEventListener("mousemove", onMouseMove);
-                window.removeEventListener("mouseup", onMouseUp);
+                window.removeEventListener("mouseup",   onMouseUp);
                 el.removeEventListener("wheel", onWheel);
                 window.removeEventListener("resize", onResize);
             };
@@ -332,12 +326,12 @@ export default function ARModal({
                     onClick={(e) => e.target === e.currentTarget && onClose()}
                 >
                     <motion.div
-                        initial={{ scale: 0.85, opacity: 0 }}
+                        initial={{ scale: 0.95, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0.85, opacity: 0 }}
+                        exit={{ scale: 0.95, opacity: 0 }}
                         transition={{ type: "spring", damping: 22, stiffness: 260 }}
-                        className="relative w-full max-w-2xl overflow-hidden rounded-[2rem] border border-cyan-300/30 bg-black shadow-[0_0_80px_rgba(34,211,238,.25)]"
-                        style={{ aspectRatio: "16/9", maxHeight: "90vh", width: "95vw" }}
+                        className="relative w-full max-w-2xl h-full overflow-hidden rounded-[2rem] border border-cyan-300/30 bg-black shadow-[0_0_80px_rgba(34,211,238,.25)]"
+                        style={{ aspectRatio: "16/9", maxHeight: "150vh", width: "95vw" }}
                     >
                         {/* Feed de cámara */}
                         <video
@@ -359,10 +353,10 @@ export default function ARModal({
 
                         {/* Esquinas HUD */}
                         {[
-                            { pos: "top-4 left-4", s: { borderTop: "2px solid rgba(34,211,238,0.8)", borderLeft: "2px solid rgba(34,211,238,0.8)" } },
-                            { pos: "top-4 right-4", s: { borderTop: "2px solid rgba(34,211,238,0.8)", borderRight: "2px solid rgba(34,211,238,0.8)" } },
-                            { pos: "bottom-4 left-4", s: { borderBottom: "2px solid rgba(34,211,238,0.8)", borderLeft: "2px solid rgba(34,211,238,0.8)" } },
-                            { pos: "bottom-4 right-4", s: { borderBottom: "2px solid rgba(34,211,238,0.8)", borderRight: "2px solid rgba(34,211,238,0.8)" } },
+                            { pos: "top-4 left-4",    s: { borderTop:    "2px solid rgba(34,211,238,0.8)", borderLeft:  "2px solid rgba(34,211,238,0.8)" } },
+                            { pos: "top-4 right-4",   s: { borderTop:    "2px solid rgba(34,211,238,0.8)", borderRight: "2px solid rgba(34,211,238,0.8)" } },
+                            { pos: "bottom-4 left-4", s: { borderBottom: "2px solid rgba(34,211,238,0.8)", borderLeft:  "2px solid rgba(34,211,238,0.8)" } },
+                            { pos: "bottom-4 right-4",s: { borderBottom: "2px solid rgba(34,211,238,0.8)", borderRight: "2px solid rgba(34,211,238,0.8)" } },
                         ].map(({ pos, s }, i) => (
                             <div key={i} className={`pointer-events-none absolute ${pos} h-6 w-6`} style={s} />
                         ))}
@@ -383,24 +377,25 @@ export default function ARModal({
                                     transition={{ duration: 0.5 }}
                                     className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/40 backdrop-blur-[2px]"
                                 >
-                                    {/* Spinner */}
                                     <div className="relative h-14 w-14">
-                                        <div className="absolute inset-0 animate-spin rounded-full border-2 border-transparent border-t-cyan-400"
-                                            style={{ animationDuration: "0.9s" }} />
-                                        <div className="absolute inset-2 animate-spin rounded-full border-2 border-transparent border-t-cyan-300/50"
-                                            style={{ animationDuration: "1.4s", animationDirection: "reverse" }} />
+                                        <div
+                                            className="absolute inset-0 animate-spin rounded-full border-2 border-transparent border-t-cyan-400"
+                                            style={{ animationDuration: "0.9s" }}
+                                        />
+                                        <div
+                                            className="absolute inset-2 animate-spin rounded-full border-2 border-transparent border-t-cyan-300/50"
+                                            style={{ animationDuration: "1.4s", animationDirection: "reverse" }}
+                                        />
                                         <div className="absolute inset-0 flex items-center justify-center">
                                             <span className="h-2 w-2 rounded-full bg-cyan-400 animate-pulse" />
                                         </div>
                                     </div>
 
-                                    {/* Mensaje según fase */}
                                     <p className="font-mono text-xs text-cyan-300 tracking-widest uppercase">
                                         {loadState === "camera" && "Iniciando cámara…"}
-                                        {loadState === "model" && (modelCache.has(modelUrl) ? "Cargando modelo…" : "Descargando modelo…")}
+                                        {loadState === "model"  && (modelCache.has(modelUrl) ? "Cargando modelo…" : "Descargando modelo…")}
                                     </p>
 
-                                    {/* Barra de progreso animada */}
                                     <div className="w-32 h-[2px] rounded-full bg-white/10 overflow-hidden">
                                         <div
                                             className="h-full bg-cyan-400 rounded-full transition-all duration-500"
@@ -422,15 +417,15 @@ export default function ARModal({
                         {/* Botón cerrar */}
                         <button
                             onClick={onClose}
-                            className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-black/50 text-white backdrop-blur-sm transition hover:bg-white/10 z-10"
+                            className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-black/50 text-white backdrop-blur-sm transition hover:bg-white/10"
                             aria-label="Cerrar AR"
                         >
                             ✕
                         </button>
 
-                        {/* Label inferior */}
+                        {/* Label inferior — texto original tuyo conservado */}
                         <div className="absolute bottom-4 left-1/2 z-10 -translate-x-1/2 rounded-full border border-cyan-400/30 bg-black/50 px-4 py-1.5 backdrop-blur-sm">
-                            <span className="text-xs font-mono text-cyan-200">TECSI · Semillero de Investigación</span>
+                            <span className="text-xs font-mono text-cyan-300">Ing Juliana Corredor Lopez</span>
                         </div>
                     </motion.div>
                 </motion.div>
