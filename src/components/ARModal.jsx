@@ -149,6 +149,7 @@ export default function ARModal({
             const canvas = renderer.domElement;
             canvas.style.position = "absolute";
             canvas.style.inset = "0";
+            canvas.style.left = "0";
             canvas.style.width = "100%";
             canvas.style.height = "100%";
 
@@ -383,14 +384,14 @@ export default function ARModal({
 
                         {/* Canvas Three.js */}
                         <div
-  ref={mountRef}
-  className="absolute inset-0 bottom-12"
-  style={{ 
-    pointerEvents: "auto", 
-    cursor: loadState === "ready" ? "grab" : "default",
-    position: "relative"  // ← agregar esto
-  }}
-/>
+                            ref={mountRef}
+                            className="absolute inset-0 bottom-12"
+                            style={{
+                                pointerEvents: "auto",
+                                cursor: loadState === "ready" ? "grab" : "default",
+                                position: "relative"  // ← agregar esto
+                            }}
+                        />
 
                         {/* ── OVERLAY DE CARGA ── */}
                         <AnimatePresence>
